@@ -1,6 +1,14 @@
-.Rproj.user
+# R
 .Rhistory
 .RData
-.httr-oauth
+.Rproj.user
+*.Rproj
+
+# Large raw data (optional — uncomment if repo gets too big)
+# data/raw/savant_aaa.csv
+# data/raw/bref_org_batting.csv
+# data/raw/chadwick.csv
+
+# OS
 .DS_Store
-.quarto
+Thumbs.db

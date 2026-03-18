@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiLB Data Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0e14;
+    --surface:   #111722;
+    --border:    #1e2d42;
+    --accent:    #e8a020;
+    --accent2:   #3b82f6;
+    --text:      #d4dde8;
+    --muted:     #546880;
+    --green:     #22c55e;
+    --red:       #ef4444;
+    --font-head: 'Bebas Neue', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'IBM Plex Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── stadium diamond background ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% -10%, rgba(232,160,32,.08) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,45,66,.3) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,45,66,.3) 40px);
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative; z-index: 10;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,14,20,.95);
+    backdrop-filter: blur(8px);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+    position: sticky; top: 0;
+  }
+  .logo {
+    font-family: var(--font-head);
+    font-size: 26px;
+    letter-spacing: .08em;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .logo span { color: var(--text); }
+  .meta-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── LAYOUT ── */
+  .shell {
+    position: relative; z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── SIDEBAR ── */
+  nav.sidebar {
+    position: sticky; top: 80px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .nav-section {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 12px 10px 4px;
+  }
+  .nav-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .15s;
+  }
+  .nav-link:hover, .nav-link.active {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--accent);
+  }
+  .nav-link .icon { font-size: 15px; width: 18px; text-align: center; }
+  .level-pills { display: flex; flex-direction: column; gap: 3px; padding: 4px 10px; }
+  .level-pill {
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    color: var(--muted);
+    transition: all .15s;
+  }
+  .level-pill:hover, .level-pill.active {
+    background: var(--surface);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── MAIN ── */
+  main { min-width: 0; display: flex; flex-direction: column; gap: 28px; }
+
+  /* ── SECTION ── */
+  .section { display: none; flex-direction: column; gap: 16px; }
+  .section.visible { display: flex; }
+
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 28px;
+    letter-spacing: .06em;
+    color: var(--text);
+  }
+  .section-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── STATS TABLE ── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .table-toolbar {
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,.2);
+    flex-wrap: wrap;
+  }
+  .search-box {
+    flex: 1; min-width: 180px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--accent2); }
+  .search-box::placeholder { color: var(--muted); }
+  select.filter-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+  }
+  select.filter-select:focus { border-color: var(--accent2); }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .data-table th {
+    padding: 8px 10px;
+    text-align: left;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(0,0,0,.15);
+  }
+  .data-table th:hover { color: var(--accent); }
+  .data-table th.sorted-asc::after  { content: ' ▲'; color: var(--accent); }
+  .data-table th.sorted-desc::after { content: ' ▼'; color: var(--accent); }
+  .data-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(30,45,66,.5);
+    white-space: nowrap;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,.025); }
+  .data-table td.name-col { color: var(--text); font-weight: 600; }
+  .data-table td.num-col  { text-align: right; color: var(--accent); }
+  .data-table td.team-col { color: var(--muted); }
+
+  .level-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .05em;
+  }
+  .tag-aaa    { background: rgba(232,160,32,.15); color: var(--accent); }
+  .tag-aa     { background: rgba(59,130,246,.15); color: var(--accent2); }
+  .tag-higha  { background: rgba(34,197,94,.15);  color: var(--green); }
+  .tag-a      { background: rgba(168,85,247,.15); color: #a855f7; }
+  .tag-rookie { background: rgba(239,68,68,.15);  color: var(--red); }
+
+  /* ── STANDINGS GRID ── */
+  .standings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .standings-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .standings-card-header {
+    padding: 8px 14px;
+    background: rgba(0,0,0,.25);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .standings-card-title {
+    font-family: var(--font-head);
+    font-size: 16px;
+    letter-spacing: .06em;
+  }
+  .standings-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+  .standings-table th { padding: 5px 10px; color: var(--muted); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
+  .standings-table td { padding: 6px 10px; border-top: 1px solid rgba(30,45,66,.5); }
+  .standings-table td.leader { color: var(--accent); font-weight: 600; }
+
+  /* ── TRANSACTIONS ── */
+  .tx-list { display: flex; flex-direction: column; gap: 1px; }
+  .tx-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 16px;
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+    transition: background .1s;
+  }
+  .tx-item:hover { background: rgba(255,255,255,.02); }
+  .tx-date { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .tx-desc { color: var(--text); }
+  .tx-desc strong { color: var(--accent); }
+  .tx-type {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(59,130,246,.1);
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  /* ── LOADING / EMPTY ── */
+  .loading {
+    padding: 60px 20px;
+    text-align: center;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .loading::before {
+    content: '';
+    display: block;
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { padding: 40px; text-align: center; color: var(--muted); font-family: var(--font-mono); font-size: 13px; }
+
+  /* ── HERO STATS ── */
+  .stat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card .label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+  .stat-card .value { font-family: var(--font-head); font-size: 36px; color: var(--accent); letter-spacing: .04em; }
+  .stat-card .sub   { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* ── PAGINATION ── */
+  .pagination {
+    display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .page-btn {
+    padding: 4px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    transition: border-color .15s;
+  }
+  .page-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .page-btn:disabled { opacity: .3; cursor: default; }
+
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    nav.sidebar { position: static; flex-direction: row; flex-wrap: wrap; }
+    .nav-section { display: none; }
+    .level-pills { flex-direction: row; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#"><span>MiLB</span> DATA HUB</a>
+  <div class="meta-badge">
+    <div class="live-dot"></div>
+    <span id="last-updated">Loading…</span>
+    <span id="season-badge"></span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="nav-section">Views</div>
+    <a class="nav-link active" data-section="overview" onclick="showSection('overview')"><span class="icon">⚾</span> Overview</a>
+    <a class="nav-link" data-section="batting"  onclick="showSection('batting')"><span class="icon">🏏</span> Batting</a>
+    <a class="nav-link" data-section="pitching" onclick="showSection('pitching')"><span class="icon">⚡</span> Pitching</a>
+    <a class="nav-link" data-section="standings" onclick="showSection('standings')"><span class="icon">🏆</span> Standings</a>
+    <a class="nav-link" data-section="transactions" onclick="showSection('transactions')"><span class="icon">🔄</span> Transactions</a>
+    <a class="nav-link" data-section="draft" onclick="showSection('draft')"><span class="icon">📋</span> Draft</a>
+
+    <div class="nav-section">Filter Level</div>
+    <div class="level-pills">
+      <div class="level-pill active tag-aaa"    data-level="ALL" onclick="setLevel('ALL')">ALL</div>
+      <div class="level-pill tag-aaa"    data-level="AAA"    onclick="setLevel('AAA')">AAA</div>
+      <div class="level-pill tag-aa"     data-level="AA"     onclick="setLevel('AA')">AA</div>
+      <div class="level-pill tag-higha"  data-level="HighA"  onclick="setLevel('HighA')">High-A</div>
+      <div class="level-pill tag-a"      data-level="A"      onclick="setLevel('A')">Single-A</div>
+      <div class="level-pill tag-rookie" data-level="Rookie" onclick="setLevel('Rookie')">Rookie</div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- OVERVIEW -->
+    <section class="section visible" id="section-overview">
+      <div class="section-header">
+        <div class="section-title">Overview</div>
+        <div class="section-sub" id="overview-sub">Season summary</div>
+      </div>
+      <div class="stat-cards" id="overview-cards">
+        <div class="loading"></div>
+      </div>
+      <div class="section-header" style="margin-top:8px">
+        <div class="section-title" style="font-size:20px">Top Hitters</div>
+      </div>
+      <div class="table-wrap" id="overview-bat-table"><div class="loading"></div></div>
+      <div class="section-header" style="margin-top:8px">
+        <div class="section-title" style="font-size:20px">Top Pitchers</div>
+      </div>
+      <div class="table-wrap" id="overview-pit-table"><div class="loading"></div></div>
+    </section>
+
+    <!-- BATTING -->
+    <section class="section" id="section-batting">
+      <div class="section-header">
+        <div class="section-title">Batting Leaderboard</div>
+        <div class="section-sub">MLB Stats API · all levels</div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-box" id="bat-search" placeholder="Search player or team…" oninput="filterTable('bat')">
+          <select class="filter-select" id="bat-level-filter" onchange="filterTable('bat')">
+            <option value="">All Levels</option>
+            <option value="AAA">AAA</option>
+            <option value="AA">AA</option>
+            <option value="HighA">High-A</option>
+            <option value="A">Single-A</option>
+            <option value="Rookie">Rookie</option>
+          </select>
+          <select class="filter-select" id="bat-pa-filter" onchange="filterTable('bat')">
+            <option value="0">Min PA: 0</option>
+            <option value="50">Min PA: 50</option>
+            <option value="100">Min PA: 100</option>
+            <option value="200">Min PA: 200</option>
+          </select>
+        </div>
+        <div id="bat-table-container"><div class="loading"></div></div>
+        <div class="pagination" id="bat-pagination"></div>
+      </div>
+    </section>
+
+    <!-- PITCHING -->
+    <section class="section" id="section-pitching">
+      <div class="section-header">
+        <div class="section-title">Pitching Leaderboard</div>
+        <div class="section-sub">MLB Stats API · all levels</div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-box" id="pit-search" placeholder="Search player or team…" oninput="filterTable('pit')">
+          <select class="filter-select" id="pit-level-filter" onchange="filterTable('pit')">
+            <option value="">All Levels</option>
+            <option value="AAA">AAA</option>
+            <option value="AA">AA</option>
+            <option value="HighA">High-A</option>
+            <option value="A">Single-A</option>
+            <option value="Rookie">Rookie</option>
+          </select>
+          <select class="filter-select" id="pit-ip-filter" onchange="filterTable('pit')">
+            <option value="0">Min IP: 0</option>
+            <option value="20">Min IP: 20</option>
+            <option value="50">Min IP: 50</option>
+          </select>
+        </div>
+        <div id="pit-table-container"><div class="loading"></div></div>
+        <div class="pagination" id="pit-pagination"></div>
+      </div>
+    </section>
+
+    <!-- STANDINGS -->
+    <section class="section" id="section-standings">
+      <div class="section-header">
+        <div class="section-title">Standings</div>
+        <div class="section-sub">by level</div>
+      </div>
+      <div class="standings-grid" id="standings-container"><div class="loading"></div></div>
+    </section>
+
+    <!-- TRANSACTIONS -->
+    <section class="section" id="section-transactions">
+      <div class="section-header">
+        <div class="section-title">Transactions</div>
+        <div class="section-sub">call-ups · options · DFA · releases</div>
+      </div>
+      <div class="table-toolbar" style="background:var(--surface);border:1px solid var(--border);border-radius:6px 6px 0 0;border-bottom:none">
+        <input class="search-box" id="tx-search" placeholder="Search player, team, or type…" oninput="filterTx()">
+        <select class="filter-select" id="tx-type-filter" onchange="filterTx()">
+          <option value="">All Types</option>
+        </select>
+      </div>
+      <div class="tx-list" id="tx-container"><div class="loading"></div></div>
+    </section>
+
+    <!-- DRAFT -->
+    <section class="section" id="section-draft">
+      <div class="section-header">
+        <div class="section-title">Draft</div>
+        <div class="section-sub">top picks by round</div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-box" id="draft-search" placeholder="Search name, school, or team…" oninput="filterDraft()">
+        </div>
+        <div id="draft-table-container"><div class="loading"></div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+const DATA = {};
+let currentLevel = 'ALL';
+const PAGE_SIZE = 50;
+const pages = { bat: 1, pit: 1 };
+let sortState = {};
+
+// ── Data loading ─────────────────────────────────────────────────────────────
+const BASE = './data/';
+
+async function fetchJSON(name) {
+  try {
+    const r = await fetch(BASE + name + '.json?_=' + Date.now());
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function loadAll() {
+  const [meta, bat, pit, standings, trans, draft] = await Promise.all([
+    fetchJSON('meta'),
+    fetchJSON('batting_all'),
+    fetchJSON('pitching_all'),
+    fetchJSON('standings_all'),
+    fetchJSON('transactions_recent'),
+    fetchJSON('draft'),
+  ]);
+
+  if (meta) {
+    document.getElementById('last-updated').textContent = 'Updated: ' + (meta.updated_utc || '—').slice(0,16).replace('T',' ');
+    document.getElementById('season-badge').textContent = 'Season ' + meta.season;
+    document.getElementById('overview-sub').textContent = 'Season ' + meta.season + ' · ' + (meta.sources || []).join(' · ');
+  }
+
+  DATA.bat       = bat       || [];
+  DATA.pit       = pit       || [];
+  DATA.standings = standings || [];
+  DATA.trans     = trans     || [];
+  DATA.draft     = draft     || [];
+
+  renderOverview();
+  renderBatTable();
+  renderPitTable();
+  renderStandings();
+  renderTransactions();
+  renderDraft();
+}
+
+// ── Section nav ───────────────────────────────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.getElementById('section-' + name).classList.add('visible');
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.classList.toggle('active', l.dataset.section === name);
+  });
+}
+
+function setLevel(lvl) {
+  currentLevel = lvl;
+  document.querySelectorAll('.level-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.level === lvl);
+  });
+  pages.bat = 1; pages.pit = 1;
+  renderBatTable(); renderPitTable(); renderStandings(); renderOverview();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function levelClass(lvl) {
+  const map = { AAA:'aaa', AA:'aa', HighA:'higha', A:'a', Rookie:'rookie' };
+  return 'level-tag tag-' + (map[lvl] || 'aaa');
+}
+
+function fmt(v, dec = 3) {
+  if (v == null || v === '') return '—';
+  const n = parseFloat(v);
+  if (isNaN(n)) return v;
+  return dec === 0 ? n.toLocaleString() : n.toFixed(dec);
+}
+
+function filterByLevel(arr) {
+  if (currentLevel === 'ALL') return arr;
+  return arr.filter(r => r.level === currentLevel);
+}
+
+function sortData(arr, col, asc) {
+  return [...arr].sort((a, b) => {
+    const av = a[col], bv = b[col];
+    const an = parseFloat(av), bn = parseFloat(bv);
+    const numericA = !isNaN(an), numericB = !isNaN(bn);
+    if (numericA && numericB) return asc ? an - bn : bn - an;
+    const sa = String(av || ''), sb = String(bv || '');
+    return asc ? sa.localeCompare(sb) : sb.localeCompare(sa);
+  });
+}
+
+function makeSortHandler(tableId, col, renderFn) {
+  return () => {
+    if (!sortState[tableId]) sortState[tableId] = { col: null, asc: true };
+    const s = sortState[tableId];
+    s.asc = s.col === col ? !s.asc : true;
+    s.col = col;
+    renderFn();
+  };
+}
+
+function buildTable(rows, cols, containerId, sortKey) {
+  if (!rows.length) { document.getElementById(containerId).innerHTML = '<div class="empty">No data available</div>'; return; }
+  const s = sortState[containerId] || {};
+  const sorted = s.col ? sortData(rows, s.col, s.asc) : rows;
+
+  let html = '<table class="data-table"><thead><tr>';
+  cols.forEach(c => {
+    const cls = s.col === c.key ? (s.asc ? 'sorted-asc' : 'sorted-desc') : '';
+    html += `<th class="${cls}" onclick="handleSort('${containerId}','${c.key}')">${c.label}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+  sorted.forEach(r => {
+    html += '<tr>';
+    cols.forEach(c => {
+      const v = r[c.key];
+      let cell = '';
+      if (c.key === 'level') cell = `<span class="${levelClass(v)}">${v || '—'}</span>`;
+      else if (c.type === 'name') cell = `<span class="name-col">${v || '—'}</span>`;
+      else if (c.type === 'num')  cell = `<span class="num-col">${fmt(v, c.dec ?? 3)}</span>`;
+      else if (c.type === 'int')  cell = `<span class="num-col">${v != null ? parseInt(v).toLocaleString() : '—'}</span>`;
+      else cell = `<span class="team-col">${v || '—'}</span>`;
+      html += `<td>${cell}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById(containerId).innerHTML = html;
+}
+
+const sortHandlers = {};
+function handleSort(tableId, col) {
+  if (!sortState[tableId]) sortState[tableId] = { col: null, asc: true };
+  const s = sortState[tableId];
+  s.asc = s.col === col ? !s.asc : true;
+  s.col = col;
+  // re-render based on table type
+  if (tableId === 'bat-table-container') renderBatTable();
+  else if (tableId === 'pit-table-container') renderPitTable();
+}
+
+// ── Overview ─────────────────────────────────────────────────────────────────
+function renderOverview() {
+  const bat = filterByLevel(DATA.bat);
+  const pit = filterByLevel(DATA.pit);
+
+  // Hero stats
+  const hrLeader = [...bat].sort((a,b) => (b.home_runs||0)-(a.home_runs||0))[0];
+  const avgLeader = [...bat].filter(r=>r.plate_appearances>=50).sort((a,b)=>(b.avg||0)-(a.avg||0))[0];
+  const eraLeader = [...pit].filter(r=>(r.innings_pitched||0)>=20).sort((a,b)=>(a.era||99)-(b.era||99))[0];
+  const soLeader  = [...pit].sort((a,b)=>(b.strike_outs||0)-(a.strike_outs||0))[0];
+
+  document.getElementById('overview-cards').innerHTML = `
+    <div class="stat-card"><div class="label">HR Leader</div><div class="value">${hrLeader?.home_runs||'—'}</div><div class="sub">${hrLeader?.player_full_name||'—'}</div></div>
+    <div class="stat-card"><div class="label">Batting Avg</div><div class="value">${avgLeader ? fmt(avgLeader.avg,3) : '—'}</div><div class="sub">${avgLeader?.player_full_name||'—'}</div></div>
+    <div class="stat-card"><div class="label">ERA Leader</div><div class="value">${eraLeader ? fmt(eraLeader.era,2) : '—'}</div><div class="sub">${eraLeader?.player_full_name||'—'}</div></div>
+    <div class="stat-card"><div class="label">K Leader</div><div class="value">${soLeader?.strike_outs||'—'}</div><div class="sub">${soLeader?.player_full_name||'—'}</div></div>
+    <div class="stat-card"><div class="label">Players</div><div class="value">${bat.length.toLocaleString()}</div><div class="sub">batters tracked</div></div>
+    <div class="stat-card"><div class="label">Pitchers</div><div class="value">${pit.length.toLocaleString()}</div><div class="sub">pitchers tracked</div></div>
+  `;
+
+  const topBat = [...bat].filter(r=>r.plate_appearances>=50).sort((a,b)=>(b.ops||0)-(a.ops||0)).slice(0,10);
+  const batCols = [
+    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
+    {key:'team_name',label:'Team'},{key:'plate_appearances',label:'PA',type:'int'},
+    {key:'home_runs',label:'HR',type:'int'},{key:'avg',label:'AVG',type:'num',dec:3},
+    {key:'obp',label:'OBP',type:'num',dec:3},{key:'slg',label:'SLG',type:'num',dec:3},
+    {key:'ops',label:'OPS',type:'num',dec:3},
+  ];
+  buildTable(topBat, batCols, 'overview-bat-table', 'ops');
+
+  const topPit = [...pit].filter(r=>(r.innings_pitched||0)>=20).sort((a,b)=>(a.era||99)-(b.era||99)).slice(0,10);
+  const pitCols = [
+    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
+    {key:'team_name',label:'Team'},{key:'innings_pitched',label:'IP',type:'num',dec:1},
+    {key:'wins',label:'W',type:'int'},{key:'losses',label:'L',type:'int'},
+    {key:'era',label:'ERA',type:'num',dec:2},{key:'whip',label:'WHIP',type:'num',dec:3},
+    {key:'strike_outs',label:'K',type:'int'},
+  ];
+  buildTable(topPit, pitCols, 'overview-pit-table', 'era');
+}
+
+// ── Batting table ─────────────────────────────────────────────────────────────
+function filterTable(type) {
+  pages[type] = 1;
+  if (type === 'bat') renderBatTable();
+  else renderPitTable();
+}
+
+function getFiltered(type) {
+  const src = type === 'bat' ? DATA.bat : DATA.pit;
+  const search = document.getElementById(type + '-search')?.value.toLowerCase() || '';
+  const lvl    = document.getElementById(type + '-level-filter')?.value || '';
+  const minVal = parseFloat(document.getElementById(type === 'bat' ? 'bat-pa-filter' : 'pit-ip-filter')?.value || 0);
+  const minKey = type === 'bat' ? 'plate_appearances' : 'innings_pitched';
+
+  return src.filter(r => {
+    if (lvl && r.level !== lvl) return false;
+    if (currentLevel !== 'ALL' && r.level !== currentLevel) return false;
+    if ((parseFloat(r[minKey]) || 0) < minVal) return false;
+    if (search && !JSON.stringify(r).toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+function renderBatTable() {
+  const rows = getFiltered('bat');
+  const s = sortState['bat-table-container'] || {};
+  const sorted = s.col ? sortData(rows, s.col, s.asc) : [...rows].sort((a,b)=>(b.ops||0)-(a.ops||0));
+  const page = pages.bat;
+  const slice = sorted.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+
+  const cols = [
+    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
+    {key:'team_name',label:'Team'},{key:'games_played',label:'G',type:'int'},
+    {key:'plate_appearances',label:'PA',type:'int'},{key:'at_bats',label:'AB',type:'int'},
+    {key:'hits',label:'H',type:'int'},{key:'doubles',label:'2B',type:'int'},
+    {key:'triples',label:'3B',type:'int'},{key:'home_runs',label:'HR',type:'int'},
+    {key:'rbi',label:'RBI',type:'int'},{key:'stolen_bases',label:'SB',type:'int'},
+    {key:'base_on_balls',label:'BB',type:'int'},{key:'strike_outs',label:'K',type:'int'},
+    {key:'avg',label:'AVG',type:'num',dec:3},{key:'obp',label:'OBP',type:'num',dec:3},
+    {key:'slg',label:'SLG',type:'num',dec:3},{key:'ops',label:'OPS',type:'num',dec:3},
+  ];
+  buildTable(slice, cols, 'bat-table-container', 'ops');
+  renderPagination('bat', rows.length);
+}
+
+function renderPitTable() {
+  const rows = getFiltered('pit');
+  const s = sortState['pit-table-container'] || {};
+  const sorted = s.col ? sortData(rows, s.col, s.asc) : [...rows].sort((a,b)=>(a.era||99)-(b.era||99));
+  const page = pages.pit;
+  const slice = sorted.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
+
+  const cols = [
+    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
+    {key:'team_name',label:'Team'},{key:'games_played',label:'G',type:'int'},
+    {key:'games_started',label:'GS',type:'int'},{key:'wins',label:'W',type:'int'},
+    {key:'losses',label:'L',type:'int'},{key:'innings_pitched',label:'IP',type:'num',dec:1},
+    {key:'era',label:'ERA',type:'num',dec:2},{key:'whip',label:'WHIP',type:'num',dec:3},
+    {key:'strike_outs',label:'K',type:'int'},{key:'base_on_balls',label:'BB',type:'int'},
+    {key:'hits',label:'H',type:'int'},{key:'home_runs',label:'HR',type:'int'},
+    {key:'batting_avg_against',label:'BAA',type:'num',dec:3},
+  ];
+  buildTable(slice, cols, 'pit-table-container', 'era');
+  renderPagination('pit', rows.length);
+}
+
+function renderPagination(type, total) {
+  const page = pages[type];
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const el = document.getElementById(type + '-pagination');
+  if (!el) return;
+  el.innerHTML = `
+    <span>${((page-1)*PAGE_SIZE)+1}–${Math.min(page*PAGE_SIZE,total)} of ${total.toLocaleString()}</span>
+    <button class="page-btn" onclick="changePage('${type}',-1)" ${page<=1?'disabled':''}>‹ Prev</button>
+    <button class="page-btn" onclick="changePage('${type}',1)"  ${page>=totalPages?'disabled':''}>Next ›</button>
+  `;
+}
+
+function changePage(type, dir) {
+  pages[type] = Math.max(1, pages[type] + dir);
+  if (type === 'bat') renderBatTable(); else renderPitTable();
+  document.getElementById('section-' + (type === 'bat' ? 'batting' : 'pitching'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Standings ─────────────────────────────────────────────────────────────────
+function renderStandings() {
+  const rows = filterByLevel(DATA.standings);
+  if (!rows.length) { document.getElementById('standings-container').innerHTML = '<div class="empty">No standings data</div>'; return; }
+
+  const byLevel = {};
+  rows.forEach(r => { (byLevel[r.level] = byLevel[r.level] || []).push(r); });
+
+  let html = '';
+  Object.entries(byLevel).forEach(([lvl, teams]) => {
+    const sorted = [...teams].sort((a,b)=>(b.wins||0)-(a.wins||0));
+    html += `<div class="standings-card">
+      <div class="standings-card-header">
+        <div class="standings-card-title"><span class="${levelClass(lvl)}">${lvl}</span></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${sorted.length} teams</div>
+      </div>
+      <table class="standings-table">
+        <thead><tr><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th></tr></thead>
+        <tbody>`;
+    sorted.forEach((t, i) => {
+      html += `<tr>
+        <td class="${i===0?'leader':''}">${t.team_name||'—'}</td>
+        <td class="${i===0?'leader':''}">${t.wins||'—'}</td>
+        <td>${t.losses||'—'}</td>
+        <td>${fmt(t.pct,3)}</td>
+        <td style="color:var(--muted)">${t.games_back||'—'}</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  });
+  document.getElementById('standings-container').innerHTML = html || '<div class="empty">No standings data</div>';
+}
+
+// ── Transactions ──────────────────────────────────────────────────────────────
+function renderTransactions() {
+  const types = [...new Set(DATA.trans.map(r=>r.typeDesc).filter(Boolean))];
+  const sel = document.getElementById('tx-type-filter');
+  if (sel) {
+    sel.innerHTML = '<option value="">All Types</option>' + types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  }
+  filterTx();
+}
+
+function filterTx() {
+  const search = document.getElementById('tx-search')?.value.toLowerCase() || '';
+  const type   = document.getElementById('tx-type-filter')?.value || '';
+  const rows   = DATA.trans.filter(r => {
+    if (type && r.typeDesc !== type) return false;
+    if (search && !JSON.stringify(r).toLowerCase().includes(search)) return false;
+    return true;
+  }).slice(0, 200);
+
+  if (!rows.length) { document.getElementById('tx-container').innerHTML = '<div class="empty">No transactions found</div>'; return; }
+
+  document.getElementById('tx-container').innerHTML = rows.map(r => `
+    <div class="tx-item">
+      <div class="tx-date">${r.date||'—'}</div>
+      <div class="tx-desc"><strong>${r.fullName||r.person_fullName||'Unknown'}</strong> · ${r.description||r.typeDesc||'—'}</div>
+      <div class="tx-type">${r.typeDesc||'—'}</div>
+    </div>
+  `).join('');
+}
+
+// ── Draft ─────────────────────────────────────────────────────────────────────
+function renderDraft() { filterDraft(); }
+function filterDraft() {
+  const search = document.getElementById('draft-search')?.value.toLowerCase() || '';
+  const rows   = DATA.draft.filter(r => !search || JSON.stringify(r).toLowerCase().includes(search)).slice(0,200);
+  const cols   = [
+    {key:'pickNumber',label:'Pick',type:'int'},{key:'roundNumber',label:'Rd',type:'int'},
+    {key:'fullName',label:'Player',type:'name'},{key:'team_name',label:'Team'},
+    {key:'school_name',label:'School'},{key:'abbreviation',label:'Pos'},
+    {key:'signingBonus',label:'Bonus',type:'num',dec:0},
+  ];
+  buildTable(rows, cols, 'draft-table-container');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>
