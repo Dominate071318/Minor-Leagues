@@ -1,6 +1,4 @@
-
 name: MiLB Data Refresh
-
 on:
   schedule:
     - cron: "0 8 * * *"
@@ -10,7 +8,6 @@ on:
         description: "Season year"
         required: false
         default: ""
-
 jobs:
   scrape:
     runs-on: ubuntu-latest
@@ -25,9 +22,6 @@ jobs:
       - name: Install R packages
         run: Rscript R/packages.R
       - name: Run scraper
-        env:
-          SEASON: ${{ github.event.inputs.season }}
-          SCRAPE_MODE: full
         run: Rscript R/scrape.R
       - name: Process data
         run: Rscript R/process.R
@@ -40,7 +34,6 @@ jobs:
           git add data/ docs/
           git diff --cached --quiet || git commit -m "data refresh"
           git push
-
   deploy-site:
     needs: scrape
     runs-on: ubuntu-latest
@@ -59,4 +52,3 @@ jobs:
           path: docs/
       - id: deployment
         uses: actions/deploy-pages@v4
-
