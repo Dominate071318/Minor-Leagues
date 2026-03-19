@@ -152,13 +152,10 @@ savant <- try_get({
   read_csv(content(resp, "text"), show_col_types = FALSE) %>% mutate(season = SEASON)
 }, "Savant AAA")
 save_raw(savant, "savant_aaa")
-
-# ── 11. Chadwick Player ID Register (FULL mode only)
-if (SCRAPE_MODE == "full") { Player ID Register ──────────────────────────────────────────
+# ── 11. Chadwick Player ID Register ─────────────────────────────────────────
 message("\n=== 11. Chadwick ===")
 chadwick <- try_get(chadwick_player_lu(), "chadwick")
 save_raw(chadwick, "chadwick")
-}
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 message(sprintf("\n✓ Scrape complete — season %d — %s", SEASON, Sys.time()))
