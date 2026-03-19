@@ -3,877 +3,696 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MiLB Data Hub</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<title>Mariners Manifest — Seattle Baseball Coverage</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Barlow+Condensed:wght@600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:        #0a0e14;
-    --surface:   #111722;
-    --border:    #1e2d42;
-    --accent:    #e8a020;
-    --accent2:   #3b82f6;
-    --text:      #d4dde8;
-    --muted:     #546880;
-    --green:     #22c55e;
-    --red:       #ef4444;
-    --font-head: 'Bebas Neue', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
-    --font-body: 'IBM Plex Sans', sans-serif;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+:root{
+  --navy:#0c2340;
+  --navy2:#0a1e38;
+  --navy3:#061526;
+  --teal:#00857c;
+  --teal2:#006d65;
+  --teal-light:#00b4a8;
+  --silver:#c4ced4;
+  --silver2:#8fa3b0;
+  --gold:#c4a033;
+  --surface:#0f2540;
+  --card:#132c4a;
+  --border:#1a3a5c;
+  --text:#e8f0f5;
+  --muted:#7a9ab5;
+  --white:#ffffff;
+  --red:#e63946;
+  --green:#2dc653;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--navy3);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;line-height:1.6}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+/* ── TOPBAR ── */
+.topbar{background:var(--navy3);border-bottom:1px solid var(--border);padding:0 24px;height:44px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:200}
+.topbar-left{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:16px;font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted)}
+.livedot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block;margin-right:5px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-  /* ── stadium diamond background ── */
-  body::before {
-    content: '';
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(ellipse 60% 40% at 50% -10%, rgba(232,160,32,.08) 0%, transparent 70%),
-      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,45,66,.3) 40px),
-      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,45,66,.3) 40px);
-  }
+/* ── MASTHEAD ── */
+.masthead{background:var(--navy);border-bottom:3px solid var(--teal);padding:20px 24px 16px;text-align:center;position:relative;overflow:hidden}
+.masthead::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,133,124,.08) 0%,transparent 60%);pointer-events:none}
+.masthead-eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--teal-light);margin-bottom:8px}
+.masthead-title{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;color:var(--white);letter-spacing:-.01em;line-height:1}
+.masthead-title span{color:var(--teal-light)}
+.masthead-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--silver2);margin-top:6px}
+.masthead-rule{display:flex;align-items:center;gap:12px;margin:14px auto 0;max-width:400px}
+.masthead-rule hr{flex:1;border:none;border-top:1px solid var(--border)}
+.masthead-rule span{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:.2em;color:var(--muted)}
 
-  /* ── HEADER ── */
-  header {
-    position: relative; z-index: 10;
-    border-bottom: 1px solid var(--border);
-    background: rgba(10,14,20,.95);
-    backdrop-filter: blur(8px);
-    padding: 0 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 56px;
-    position: sticky; top: 0;
-  }
-  .logo {
-    font-family: var(--font-head);
-    font-size: 26px;
-    letter-spacing: .08em;
-    color: var(--accent);
-    text-decoration: none;
-  }
-  .logo span { color: var(--text); }
-  .meta-badge {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    display: flex; align-items: center; gap: 16px;
-  }
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--green);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+/* ── MAIN NAV ── */
+.mainnav{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:2px;overflow-x:auto;position:sticky;top:44px;z-index:190}
+.mainnav a{padding:10px 14px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.mainnav a:hover,.mainnav a.active{color:var(--teal-light);border-bottom-color:var(--teal-light)}
 
-  /* ── LAYOUT ── */
-  .shell {
-    position: relative; z-index: 1;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 24px 24px 80px;
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 24px;
-    align-items: start;
-  }
+/* ── AFFILIATE TABS ── */
+.afftabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:2px;overflow-x:auto}
+.afftab{padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);white-space:nowrap;transition:all .15s}
+.afftab:hover{color:var(--text)}
+.afftab.active{color:var(--teal-light);border-bottom-color:var(--teal-light)}
 
-  /* ── SIDEBAR ── */
-  nav.sidebar {
-    position: sticky; top: 80px;
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .nav-section {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: .12em;
-    color: var(--muted);
-    text-transform: uppercase;
-    padding: 12px 10px 4px;
-  }
-  .nav-link {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px;
-    border-radius: 4px;
-    color: var(--text);
-    text-decoration: none;
-    font-size: 13px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all .15s;
-  }
-  .nav-link:hover, .nav-link.active {
-    background: var(--surface);
-    border-color: var(--border);
-    color: var(--accent);
-  }
-  .nav-link .icon { font-size: 15px; width: 18px; text-align: center; }
-  .level-pills { display: flex; flex-direction: column; gap: 3px; padding: 4px 10px; }
-  .level-pill {
-    padding: 4px 10px;
-    border-radius: 3px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid transparent;
-    color: var(--muted);
-    transition: all .15s;
-  }
-  .level-pill:hover, .level-pill.active {
-    background: var(--surface);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+/* ── SHELL ── */
+.shell{max-width:1280px;margin:0 auto;padding:24px}
+.section{display:none}.section.visible{display:block}
 
-  /* ── MAIN ── */
-  main { min-width: 0; display: flex; flex-direction: column; gap: 28px; }
+/* ── HOMEPAGE GRID ── */
+.home-grid{display:grid;grid-template-columns:1fr 340px;gap:24px}
+.home-main{}
+.home-side{}
 
-  /* ── SECTION ── */
-  .section { display: none; flex-direction: column; gap: 16px; }
-  .section.visible { display: flex; }
+/* ── FEATURED ARTICLE ── */
+.featured{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px;cursor:pointer;transition:border-color .2s}
+.featured:hover{border-color:var(--teal)}
+.featured-img{width:100%;height:240px;background:linear-gradient(135deg,var(--navy) 0%,var(--teal2) 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.featured-img .bg-text{font-family:'Playfair Display',serif;font-size:120px;font-weight:900;color:rgba(255,255,255,.04);position:absolute;user-select:none}
+.featured-img .badge{position:absolute;top:16px;left:16px;background:var(--teal);color:var(--white);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:3px}
+.featured-body{padding:20px}
+.featured-cat{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--teal-light);margin-bottom:8px}
+.featured-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--white);line-height:1.25;margin-bottom:10px}
+.featured-excerpt{font-family:'Source Serif 4',serif;font-size:15px;color:var(--silver2);line-height:1.6;margin-bottom:14px}
+.featured-meta{font-family:'Barlow',sans-serif;font-size:12px;color:var(--muted);display:flex;gap:16px}
 
-  .section-header {
-    display: flex; align-items: baseline; justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 8px;
-  }
-  .section-title {
-    font-family: var(--font-head);
-    font-size: 28px;
-    letter-spacing: .06em;
-    color: var(--text);
-  }
-  .section-sub {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-  }
+/* ── ARTICLE GRID ── */
+.article-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.article-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:border-color .15s}
+.article-card:hover{border-color:var(--teal)}
+.article-cat{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--teal-light);margin-bottom:6px}
+.article-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--white);line-height:1.3;margin-bottom:8px}
+.article-excerpt{font-size:12px;color:var(--silver2);line-height:1.5;margin-bottom:10px}
+.article-meta{font-size:11px;color:var(--muted)}
 
-  /* ── STATS TABLE ── */
-  .table-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .table-toolbar {
-    padding: 10px 16px;
-    display: flex; align-items: center; gap: 12px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(0,0,0,.2);
-    flex-wrap: wrap;
-  }
-  .search-box {
-    flex: 1; min-width: 180px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 6px 10px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    outline: none;
-  }
-  .search-box:focus { border-color: var(--accent2); }
-  .search-box::placeholder { color: var(--muted); }
-  select.filter-select {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 6px 10px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    cursor: pointer;
-    outline: none;
-  }
-  select.filter-select:focus { border-color: var(--accent2); }
+/* ── SIDEBAR ── */
+.sidebar-widget{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.widget-head{padding:10px 14px;background:var(--navy2);border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--silver);display:flex;align-items:center;justify-content:space-between}
+.widget-head a{font-size:10px;color:var(--teal-light);text-decoration:none;cursor:pointer}
 
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--font-mono);
-    font-size: 12px;
-  }
-  .data-table th {
-    padding: 8px 10px;
-    text-align: left;
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-    background: rgba(0,0,0,.15);
-  }
-  .data-table th:hover { color: var(--accent); }
-  .data-table th.sorted-asc::after  { content: ' ▲'; color: var(--accent); }
-  .data-table th.sorted-desc::after { content: ' ▼'; color: var(--accent); }
-  .data-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid rgba(30,45,66,.5);
-    white-space: nowrap;
-  }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tr:hover td { background: rgba(255,255,255,.025); }
-  .data-table td.name-col { color: var(--text); font-weight: 600; }
-  .data-table td.num-col  { text-align: right; color: var(--accent); }
-  .data-table td.team-col { color: var(--muted); }
+/* ── SCORES ── */
+.score-item{padding:10px 14px;border-bottom:1px solid rgba(26,58,92,.5);display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:13px}
+.score-item:last-child{border-bottom:none}
+.score-team{font-weight:600}
+.score-team.away{text-align:left}
+.score-team.home{text-align:right}
+.score-num{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;text-align:center;color:var(--teal-light)}
+.score-status{font-family:'Barlow Condensed',sans-serif;font-size:10px;text-align:center;color:var(--muted);letter-spacing:.06em}
+.score-level{font-size:10px;color:var(--muted);text-align:center}
 
-  .level-tag {
-    display: inline-block;
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .05em;
-  }
-  .tag-aaa    { background: rgba(232,160,32,.15); color: var(--accent); }
-  .tag-aa     { background: rgba(59,130,246,.15); color: var(--accent2); }
-  .tag-higha  { background: rgba(34,197,94,.15);  color: var(--green); }
-  .tag-a      { background: rgba(168,85,247,.15); color: #a855f7; }
-  .tag-rookie { background: rgba(239,68,68,.15);  color: var(--red); }
+/* ── TRANSACTIONS WIDGET ── */
+.tx-item-sm{padding:9px 14px;border-bottom:1px solid rgba(26,58,92,.5);font-size:12px}
+.tx-item-sm:last-child{border-bottom:none}
+.tx-item-sm .tp{font-weight:600;color:var(--text);margin-bottom:2px}
+.tx-item-sm .td{color:var(--muted);font-size:11px}
+.tx-badge{display:inline-block;padding:1px 6px;border-radius:2px;font-size:10px;font-weight:700;background:rgba(0,180,168,.1);color:var(--teal-light);margin-right:5px}
 
-  /* ── STANDINGS GRID ── */
-  .standings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-  .standings-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .standings-card-header {
-    padding: 8px 14px;
-    background: rgba(0,0,0,.25);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .standings-card-title {
-    font-family: var(--font-head);
-    font-size: 16px;
-    letter-spacing: .06em;
-  }
-  .standings-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
-  .standings-table th { padding: 5px 10px; color: var(--muted); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
-  .standings-table td { padding: 6px 10px; border-top: 1px solid rgba(30,45,66,.5); }
-  .standings-table td.leader { color: var(--accent); font-weight: 600; }
+/* ── STATS SECTIONS ── */
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--border)}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--white)}
+.sec-badge{font-size:11px;font-weight:600;padding:2px 8px;background:rgba(0,133,124,.15);color:var(--teal-light);border-radius:3px;letter-spacing:.06em;font-family:'Barlow Condensed',sans-serif}
+.sec-sub{margin-left:auto;font-size:12px;color:var(--muted);font-family:'Barlow',sans-serif}
 
-  /* ── TRANSACTIONS ── */
-  .tx-list { display: flex; flex-direction: column; gap: 1px; }
-  .tx-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px 16px;
-    display: grid;
-    grid-template-columns: 100px 1fr auto;
-    gap: 12px;
-    align-items: center;
-    font-size: 13px;
-    transition: background .1s;
-  }
-  .tx-item:hover { background: rgba(255,255,255,.02); }
-  .tx-date { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
-  .tx-desc { color: var(--text); }
-  .tx-desc strong { color: var(--accent); }
-  .tx-type {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 3px;
-    background: rgba(59,130,246,.1);
-    color: var(--accent2);
-    white-space: nowrap;
-  }
+/* ── TABLE ── */
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.ttoolbar{padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15);flex-wrap:wrap}
+.tsearch{flex:1;min-width:140px;background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:5px 9px;color:var(--text);font-family:monospace;font-size:12px;outline:none}
+.tsearch:focus{border-color:var(--teal)}
+.tsearch::placeholder{color:var(--muted)}
+.tselect{background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:5px 9px;color:var(--text);font-family:monospace;font-size:12px;cursor:pointer;outline:none}
+.tselect:focus{border-color:var(--teal)}
+.dtable{width:100%;border-collapse:collapse;font-family:monospace;font-size:12px}
+.dtable th{padding:7px 10px;text-align:left;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15);cursor:pointer;white-space:nowrap;user-select:none}
+.dtable th:hover{color:var(--teal-light)}
+.dtable th.sa::after{content:' ▲';color:var(--teal-light)}
+.dtable th.sd::after{content:' ▼';color:var(--teal-light)}
+.dtable td{padding:7px 10px;border-bottom:1px solid rgba(26,58,92,.4);white-space:nowrap}
+.dtable tr:last-child td{border-bottom:none}
+.dtable tr:hover td{background:rgba(0,133,124,.05)}
+.nc{color:var(--white);font-weight:600}
+.num{color:var(--teal-light);text-align:right}
+.muted{color:var(--muted)}
+.hi{color:var(--gold);font-weight:700}
+.tag{display:inline-block;padding:1px 5px;border-radius:2px;font-size:10px;font-weight:700;letter-spacing:.04em;font-family:monospace}
+.tag-aaa{background:rgba(0,180,168,.15);color:var(--teal-light)}
+.tag-aa{background:rgba(59,130,246,.15);color:#60a5fa}
+.tag-higha{background:rgba(34,197,94,.15);color:#4ade80}
+.tag-a{background:rgba(168,85,247,.15);color:#c084fc}
+.tag-rookie{background:rgba(239,68,68,.15);color:#f87171}
+.tag-mlb{background:rgba(196,160,51,.2);color:var(--gold)}
 
-  /* ── LOADING / EMPTY ── */
-  .loading {
-    padding: 60px 20px;
-    text-align: center;
-    font-family: var(--font-mono);
-    color: var(--muted);
-    font-size: 13px;
-  }
-  .loading::before {
-    content: '';
-    display: block;
-    width: 32px; height: 32px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    margin: 0 auto 16px;
-    animation: spin .8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .empty { padding: 40px; text-align: center; color: var(--muted); font-family: var(--font-mono); font-size: 13px; }
+/* ── PROSPECT CARDS ── */
+.prospect-list{display:flex;flex-direction:column;gap:1px}
+.prospect-item{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:12px 14px;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;transition:border-color .15s;cursor:pointer}
+.prospect-item:hover{border-color:var(--teal)}
+.p-rank{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--border);line-height:1}
+.p-rank.top10{color:var(--gold)}
+.p-rank.top100{color:var(--teal-light)}
+.p-name{font-weight:600;font-size:14px;color:var(--white);margin-bottom:2px}
+.p-meta{font-size:11px;color:var(--muted)}
+.p-grade{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--teal-light)}
 
-  /* ── HERO STATS ── */
-  .stat-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 16px;
-    text-align: center;
-  }
-  .stat-card .label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
-  .stat-card .value { font-family: var(--font-head); font-size: 36px; color: var(--accent); letter-spacing: .04em; }
-  .stat-card .sub   { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+/* ── MATCHUP ── */
+.mu-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.mu-panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px}
+.mu-head{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.pitch-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.pitch-card{background:var(--navy2);border:1px solid var(--border);border-radius:5px;padding:10px}
+.pitch-name{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.pitch-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--teal-light)}
+.pitch-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.zone-map{width:100%;aspect-ratio:1;background:var(--navy2);border:1px solid var(--border);border-radius:5px;margin-top:12px}
+.zone-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);height:100%;gap:1px;background:var(--border);padding:1px}
+.zone-cell{background:var(--navy3);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;font-weight:600}
+.hand-toggle{display:flex;gap:4px;margin-bottom:10px}
+.hand-btn{flex:1;padding:5px;background:var(--navy3);border:1px solid var(--border);border-radius:4px;color:var(--muted);font-weight:700;font-size:12px;cursor:pointer;text-align:center;transition:all .15s;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em}
+.hand-btn.active{background:rgba(0,133,124,.2);border-color:var(--teal);color:var(--teal-light)}
+.pstat-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(26,58,92,.4)}
+.pstat-row:last-child{border-bottom:none}
+.pstat-lbl{font-size:12px;color:var(--muted)}
+.pstat-val{font-family:monospace;font-weight:600;color:var(--teal-light)}
+.result-row{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border)}
+.result-row:hover{background:rgba(0,133,124,.08)}
+.result-row .rn{font-weight:600;font-size:13px;color:var(--white)}
+.result-row .rs{font-size:11px;color:var(--muted)}
 
-  /* ── PAGINATION ── */
-  .pagination {
-    display: flex; align-items: center; justify-content: flex-end; gap: 6px;
-    padding: 10px 16px;
-    border-top: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .page-btn {
-    padding: 4px 10px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    color: var(--text);
-    cursor: pointer;
-    font-family: var(--font-mono);
-    font-size: 12px;
-    transition: border-color .15s;
-  }
-  .page-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .page-btn:disabled { opacity: .3; cursor: default; }
+/* ── ARTICLE WRITER ── */
+.writer-form{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:20px}
+.writer-field{width:100%;background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:10px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;outline:none;margin-bottom:10px}
+.writer-field:focus{border-color:var(--teal)}
+.writer-field::placeholder{color:var(--muted)}
+textarea.writer-field{min-height:200px;resize:vertical;font-family:'Source Serif 4',serif;font-size:15px;line-height:1.7}
+.writer-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.w-btn{padding:6px 14px;background:var(--navy3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:all .15s}
+.w-btn:hover{border-color:var(--teal);color:var(--teal-light)}
+.w-btn.primary{background:var(--teal2);border-color:var(--teal);color:var(--white)}
+.w-btn.primary:hover{background:var(--teal)}
+.cat-select{background:var(--navy3);border:1px solid var(--border);border-radius:4px;padding:6px 10px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;cursor:pointer;outline:none}
 
-  @media (max-width: 900px) {
-    .shell { grid-template-columns: 1fr; }
-    nav.sidebar { position: static; flex-direction: row; flex-wrap: wrap; }
-    .nav-section { display: none; }
-    .level-pills { flex-direction: row; }
-  }
+/* ── UTIL ── */
+.pagination{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:10px 12px;border-top:1px solid var(--border);font-family:monospace;font-size:12px;color:var(--muted)}
+.page-btn{padding:3px 9px;background:var(--navy3);border:1px solid var(--border);border-radius:3px;color:var(--text);cursor:pointer;font-family:monospace;font-size:12px}
+.page-btn:hover{border-color:var(--teal);color:var(--teal-light)}
+.page-btn:disabled{opacity:.3;cursor:default}
+.loading{padding:50px;text-align:center;color:var(--muted);font-family:monospace;font-size:12px}
+.loading::before{content:'';display:block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--teal-light);border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{padding:30px;text-align:center;color:var(--muted);font-family:monospace;font-size:12px}
+
+@media(max-width:900px){
+  .home-grid{grid-template-columns:1fr}
+  .home-side{display:none}
+  .article-grid{grid-template-columns:1fr}
+  .mu-grid{grid-template-columns:1fr}
+  .masthead-title{font-size:36px}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <a class="logo" href="#"><span>MiLB</span> DATA HUB</a>
-  <div class="meta-badge">
-    <div class="live-dot"></div>
-    <span id="last-updated">Loading…</span>
-    <span id="season-badge"></span>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">Seattle Mariners Organization Coverage</div>
+  <div class="topbar-right">
+    <span><span class="livedot"></span><span id="updated">Loading…</span></span>
+    <span id="season-lbl" style="color:var(--teal-light);font-weight:700"></span>
   </div>
-</header>
+</div>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-eyebrow">Seattle Mariners · Full Organization</div>
+  <div class="masthead-title">Mariners <span>Manifest</span></div>
+  <div class="masthead-sub">MLB · AAA · AA · High-A · Single-A · Rookie</div>
+  <div class="masthead-rule"><hr><span>EST. 2025</span><hr></div>
+</div>
+
+<!-- MAIN NAV -->
+<nav class="mainnav">
+  <a class="active" data-sec="home"         onclick="nav('home')">Home</a>
+  <a data-sec="affiliates"  onclick="nav('affiliates')">Affiliates</a>
+  <a data-sec="prospects"   onclick="nav('prospects')">Top Prospects</a>
+  <a data-sec="matchup"     onclick="nav('matchup')">⚡ Matchup</a>
+  <a data-sec="scores"      onclick="nav('scores')">Scores</a>
+  <a data-sec="transactions" onclick="nav('transactions')">Transactions</a>
+  <a data-sec="write"       onclick="nav('write')">✍️ Write</a>
+</nav>
 
 <div class="shell">
 
-  <nav class="sidebar">
-    <div class="nav-section">Views</div>
-    <a class="nav-link active" data-section="overview" onclick="showSection('overview')"><span class="icon">⚾</span> Overview</a>
-    <a class="nav-link" data-section="batting"  onclick="showSection('batting')"><span class="icon">🏏</span> Batting</a>
-    <a class="nav-link" data-section="pitching" onclick="showSection('pitching')"><span class="icon">⚡</span> Pitching</a>
-    <a class="nav-link" data-section="standings" onclick="showSection('standings')"><span class="icon">🏆</span> Standings</a>
-    <a class="nav-link" data-section="transactions" onclick="showSection('transactions')"><span class="icon">🔄</span> Transactions</a>
-    <a class="nav-link" data-section="draft" onclick="showSection('draft')"><span class="icon">📋</span> Draft</a>
+<!-- HOME -->
+<div class="section visible" id="sec-home">
+  <div class="home-grid">
+    <div class="home-main">
+      <!-- Featured Article -->
+      <div class="featured" onclick="nav('write')">
+        <div class="featured-img">
+          <div class="bg-text">M</div>
+          <div class="badge">Featured</div>
+        </div>
+        <div class="featured-body">
+          <div class="featured-cat">Organization Report</div>
+          <div class="featured-title">Welcome to Mariners Manifest — Your Full-Org Coverage Hub</div>
+          <div class="featured-excerpt">From the MLB roster to the Arizona Complex League, we track every player in the Seattle system. Stats update automatically. Click Write to publish your first article.</div>
+          <div class="featured-meta">
+            <span>Mariners Manifest Staff</span>
+            <span id="todays-date"></span>
+          </div>
+        </div>
+      </div>
 
-    <div class="nav-section">Filter Level</div>
-    <div class="level-pills">
-      <div class="level-pill active tag-aaa"    data-level="ALL" onclick="setLevel('ALL')">ALL</div>
-      <div class="level-pill tag-aaa"    data-level="AAA"    onclick="setLevel('AAA')">AAA</div>
-      <div class="level-pill tag-aa"     data-level="AA"     onclick="setLevel('AA')">AA</div>
-      <div class="level-pill tag-higha"  data-level="HighA"  onclick="setLevel('HighA')">High-A</div>
-      <div class="level-pill tag-a"      data-level="A"      onclick="setLevel('A')">Single-A</div>
-      <div class="level-pill tag-rookie" data-level="Rookie" onclick="setLevel('Rookie')">Rookie</div>
+      <!-- Article grid -->
+      <div class="article-grid" id="article-grid">
+        <!-- populated by JS -->
+      </div>
+
+      <!-- Affiliate Stats Preview -->
+      <div class="sec-head">
+        <div class="sec-title">Affiliate Leaders</div>
+        <div class="sec-badge">Today</div>
+        <div class="sec-sub" style="cursor:pointer;color:var(--teal-light)" onclick="nav('affiliates')">View All →</div>
+      </div>
+      <div class="tcard" id="home-bat-tbl"><div class="loading"></div></div>
     </div>
-  </nav>
 
-  <main>
+    <div class="home-side">
+      <!-- Scores widget -->
+      <div class="sidebar-widget">
+        <div class="widget-head">Today's Scores <a onclick="nav('scores')">All →</a></div>
+        <div id="scores-widget"><div class="loading"></div></div>
+      </div>
 
-    <!-- OVERVIEW -->
-    <section class="section visible" id="section-overview">
-      <div class="section-header">
-        <div class="section-title">Overview</div>
-        <div class="section-sub" id="overview-sub">Season summary</div>
+      <!-- Top Prospects widget -->
+      <div class="sidebar-widget">
+        <div class="widget-head">Top M's Prospects <a onclick="nav('prospects')">All →</a></div>
+        <div id="prospects-widget"></div>
       </div>
-      <div class="stat-cards" id="overview-cards">
-        <div class="loading"></div>
-      </div>
-      <div class="section-header" style="margin-top:8px">
-        <div class="section-title" style="font-size:20px">Top Hitters</div>
-      </div>
-      <div class="table-wrap" id="overview-bat-table"><div class="loading"></div></div>
-      <div class="section-header" style="margin-top:8px">
-        <div class="section-title" style="font-size:20px">Top Pitchers</div>
-      </div>
-      <div class="table-wrap" id="overview-pit-table"><div class="loading"></div></div>
-    </section>
 
-    <!-- BATTING -->
-    <section class="section" id="section-batting">
-      <div class="section-header">
-        <div class="section-title">Batting Leaderboard</div>
-        <div class="section-sub">MLB Stats API · all levels</div>
+      <!-- Transactions widget -->
+      <div class="sidebar-widget">
+        <div class="widget-head">Latest Transactions <a onclick="nav('transactions')">All →</a></div>
+        <div id="tx-widget"><div class="loading"></div></div>
       </div>
-      <div class="table-wrap">
-        <div class="table-toolbar">
-          <input class="search-box" id="bat-search" placeholder="Search player or team…" oninput="filterTable('bat')">
-          <select class="filter-select" id="bat-level-filter" onchange="filterTable('bat')">
-            <option value="">All Levels</option>
-            <option value="AAA">AAA</option>
-            <option value="AA">AA</option>
-            <option value="HighA">High-A</option>
-            <option value="A">Single-A</option>
-            <option value="Rookie">Rookie</option>
-          </select>
-          <select class="filter-select" id="bat-pa-filter" onchange="filterTable('bat')">
-            <option value="0">Min PA: 0</option>
-            <option value="50">Min PA: 50</option>
-            <option value="100">Min PA: 100</option>
-            <option value="200">Min PA: 200</option>
-          </select>
-        </div>
-        <div id="bat-table-container"><div class="loading"></div></div>
-        <div class="pagination" id="bat-pagination"></div>
-      </div>
-    </section>
-
-    <!-- PITCHING -->
-    <section class="section" id="section-pitching">
-      <div class="section-header">
-        <div class="section-title">Pitching Leaderboard</div>
-        <div class="section-sub">MLB Stats API · all levels</div>
-      </div>
-      <div class="table-wrap">
-        <div class="table-toolbar">
-          <input class="search-box" id="pit-search" placeholder="Search player or team…" oninput="filterTable('pit')">
-          <select class="filter-select" id="pit-level-filter" onchange="filterTable('pit')">
-            <option value="">All Levels</option>
-            <option value="AAA">AAA</option>
-            <option value="AA">AA</option>
-            <option value="HighA">High-A</option>
-            <option value="A">Single-A</option>
-            <option value="Rookie">Rookie</option>
-          </select>
-          <select class="filter-select" id="pit-ip-filter" onchange="filterTable('pit')">
-            <option value="0">Min IP: 0</option>
-            <option value="20">Min IP: 20</option>
-            <option value="50">Min IP: 50</option>
-          </select>
-        </div>
-        <div id="pit-table-container"><div class="loading"></div></div>
-        <div class="pagination" id="pit-pagination"></div>
-      </div>
-    </section>
-
-    <!-- STANDINGS -->
-    <section class="section" id="section-standings">
-      <div class="section-header">
-        <div class="section-title">Standings</div>
-        <div class="section-sub">by level</div>
-      </div>
-      <div class="standings-grid" id="standings-container"><div class="loading"></div></div>
-    </section>
-
-    <!-- TRANSACTIONS -->
-    <section class="section" id="section-transactions">
-      <div class="section-header">
-        <div class="section-title">Transactions</div>
-        <div class="section-sub">call-ups · options · DFA · releases</div>
-      </div>
-      <div class="table-toolbar" style="background:var(--surface);border:1px solid var(--border);border-radius:6px 6px 0 0;border-bottom:none">
-        <input class="search-box" id="tx-search" placeholder="Search player, team, or type…" oninput="filterTx()">
-        <select class="filter-select" id="tx-type-filter" onchange="filterTx()">
-          <option value="">All Types</option>
-        </select>
-      </div>
-      <div class="tx-list" id="tx-container"><div class="loading"></div></div>
-    </section>
-
-    <!-- DRAFT -->
-    <section class="section" id="section-draft">
-      <div class="section-header">
-        <div class="section-title">Draft</div>
-        <div class="section-sub">top picks by round</div>
-      </div>
-      <div class="table-wrap">
-        <div class="table-toolbar">
-          <input class="search-box" id="draft-search" placeholder="Search name, school, or team…" oninput="filterDraft()">
-        </div>
-        <div id="draft-table-container"><div class="loading"></div></div>
-      </div>
-    </section>
-
-  </main>
+    </div>
+  </div>
 </div>
 
+<!-- AFFILIATES -->
+<div class="section" id="sec-affiliates">
+  <!-- Affiliate tabs -->
+  <div class="afftabs" style="margin:-24px -24px 24px;padding-left:24px">
+    <div class="afftab active" data-aff="ALL"      onclick="setAff('ALL')">All M's</div>
+    <div class="afftab"        data-aff="SEA"      onclick="setAff('SEA')">SEA — MLB</div>
+    <div class="afftab"        data-aff="TAC"      onclick="setAff('TAC')">Tacoma — AAA</div>
+    <div class="afftab"        data-aff="ARK"      onclick="setAff('ARK')">Arkansas — AA</div>
+    <div class="afftab"        data-aff="EVE"      onclick="setAff('EVE')">Everett — High-A</div>
+    <div class="afftab"        data-aff="MOD"      onclick="setAff('MOD')">Modesto — A</div>
+    <div class="afftab"        data-aff="ACL"      onclick="setAff('ACL')">ACL — Rookie</div>
+  </div>
+
+  <div class="sec-head"><div class="sec-title">Batting</div><div class="sec-badge" id="aff-badge">All Affiliates</div></div>
+  <div class="tcard">
+    <div class="ttoolbar">
+      <input class="tsearch" id="aff-bat-q" placeholder="Search player…" oninput="filterAffBat()">
+      <select class="tselect" id="aff-bat-pa" onchange="filterAffBat()"><option value="0">Min PA: 0</option><option value="50">50</option><option value="100">100</option><option value="200">200</option></select>
+    </div>
+    <div id="aff-bat-tbl"><div class="loading"></div></div>
+    <div class="pagination" id="aff-bat-pg"></div>
+  </div>
+
+  <div class="sec-head"><div class="sec-title">Pitching</div></div>
+  <div class="tcard">
+    <div class="ttoolbar">
+      <input class="tsearch" id="aff-pit-q" placeholder="Search pitcher…" oninput="filterAffPit()">
+      <select class="tselect" id="aff-pit-ip" onchange="filterAffPit()"><option value="0">Min IP: 0</option><option value="20">20</option><option value="50">50</option></select>
+    </div>
+    <div id="aff-pit-tbl"><div class="loading"></div></div>
+    <div class="pagination" id="aff-pit-pg"></div>
+  </div>
+</div>
+
+<!-- PROSPECTS -->
+<div class="section" id="sec-prospects">
+  <div class="sec-head">
+    <div class="sec-title">Top Prospects</div>
+    <div class="sec-badge">All 30 Organizations</div>
+    <div class="sec-sub">FV Grades · MLB Pipeline</div>
+  </div>
+  <div class="tcard">
+    <div class="ttoolbar">
+      <input class="tsearch" id="pro-q" placeholder="Search prospect, team, position…" oninput="filterProspects()">
+      <select class="tselect" id="pro-org" onchange="filterProspects()"><option value="">All Orgs</option><option value="SEA">Mariners</option></select>
+      <select class="tselect" id="pro-pos" onchange="filterProspects()"><option value="">All Positions</option><option>RHP</option><option>LHP</option><option>C</option><option>1B</option><option>2B</option><option>3B</option><option>SS</option><option>OF</option></select>
+    </div>
+    <div id="pro-tbl"><div class="loading"></div></div>
+    <div class="pagination" id="pro-pg"></div>
+  </div>
+</div>
+
+<!-- MATCHUP -->
+<div class="section" id="sec-matchup">
+  <div class="sec-head"><div class="sec-title">⚡ Matchup Analyzer</div><div class="sec-badge">Pitcher vs Batter · Statcast</div></div>
+  <div class="mu-grid">
+    <div class="mu-panel">
+      <div class="mu-head">Select Pitcher</div>
+      <input class="tsearch" id="pit-mu-q" placeholder="Search pitcher…" oninput="muSearch('pit')" style="width:100%;margin-bottom:8px">
+      <div id="pit-mu-res" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;margin-bottom:12px;display:none"></div>
+      <div class="mu-head">Pitch Arsenal</div>
+      <div class="hand-toggle">
+        <div class="hand-btn active" onclick="setHand('R')">vs RHB</div>
+        <div class="hand-btn"        onclick="setHand('L')">vs LHB</div>
+      </div>
+      <div class="pitch-grid" id="pitch-cards"><div class="empty" style="grid-column:1/-1;padding:16px">Select a pitcher</div></div>
+      <div class="mu-head" style="margin-top:14px">Strike Zone (BA Against)</div>
+      <div class="zone-map"><div class="zone-grid" id="zone-grid">
+        <div class="zone-cell">—</div><div class="zone-cell">—</div><div class="zone-cell">—</div>
+        <div class="zone-cell">—</div><div class="zone-cell">—</div><div class="zone-cell">—</div>
+        <div class="zone-cell">—</div><div class="zone-cell">—</div><div class="zone-cell">—</div>
+      </div></div>
+    </div>
+    <div class="mu-panel">
+      <div class="mu-head">Select Batter</div>
+      <input class="tsearch" id="bat-mu-q" placeholder="Search batter…" oninput="muSearch('bat')" style="width:100%;margin-bottom:8px">
+      <div id="bat-mu-res" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;margin-bottom:12px;display:none"></div>
+      <div class="mu-head">Batter Profile</div>
+      <div id="bat-mu-stats"><div class="empty" style="padding:16px">Select a batter</div></div>
+      <div class="mu-head" style="margin-top:14px">vs Pitch Types</div>
+      <div id="bat-mu-splits"><div class="empty" style="padding:16px">Select both to see matchup</div></div>
+    </div>
+  </div>
+  <div class="tcard" id="mu-result" style="display:none">
+    <div class="ttoolbar"><div class="sec-title" style="font-size:16px" id="mu-header">Matchup Summary</div></div>
+    <div id="mu-body" style="padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px"></div>
+    <div style="padding:0 14px 14px;color:var(--muted);font-size:11px">⚡ Full Statcast pitch-by-pitch data available for AAA once Savant scraping is active.</div>
+  </div>
+</div>
+
+<!-- SCORES -->
+<div class="section" id="sec-scores">
+  <div class="sec-head"><div class="sec-title">Scores & Results</div><div class="sec-badge">All Affiliates</div></div>
+  <div class="tcard" id="scores-full"><div class="loading"></div></div>
+</div>
+
+<!-- TRANSACTIONS -->
+<div class="section" id="sec-transactions">
+  <div class="sec-head"><div class="sec-title">Transactions</div><div class="sec-badge">Mariners Org</div></div>
+  <div class="ttoolbar" style="background:var(--card);border:1px solid var(--border);border-radius:8px 8px 0 0;border-bottom:none">
+    <input class="tsearch" id="tx-q" placeholder="Search player, type…" oninput="filterTx()">
+    <select class="tselect" id="tx-type" onchange="filterTx()"><option value="">All Types</option></select>
+  </div>
+  <div id="tx-list" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;overflow:hidden"></div>
+</div>
+
+<!-- WRITE -->
+<div class="section" id="sec-write">
+  <div class="sec-head"><div class="sec-title">Write an Article</div><div class="sec-badge">Mariners Manifest</div></div>
+  <div class="writer-form">
+    <div class="writer-toolbar">
+      <select class="cat-select" id="art-cat">
+        <option>Organization Report</option>
+        <option>Prospect Analysis</option>
+        <option>Game Recap</option>
+        <option>Matchup Preview</option>
+        <option>Transaction Reaction</option>
+        <option>Opinion</option>
+      </select>
+      <button class="w-btn primary" onclick="publishArticle()">Publish Article</button>
+      <button class="w-btn" onclick="clearDraft()">Clear</button>
+    </div>
+    <input class="writer-field" id="art-title" placeholder="Article headline…">
+    <input class="writer-field" id="art-excerpt" placeholder="Short summary (shown on homepage)…">
+    <textarea class="writer-field" id="art-body" placeholder="Write your article here…&#10;&#10;Cover the Mariners system, prospects, game recaps, transaction analysis — whatever you want to publish."></textarea>
+  </div>
+  <div class="sec-head"><div class="sec-title">Published Articles</div></div>
+  <div id="published-list">
+    <div class="empty">No articles yet — write your first one above!</div>
+  </div>
+</div>
+
+</div><!-- /shell -->
+
 <script>
-// ── State ────────────────────────────────────────────────────────────────────
-const DATA = {};
-let currentLevel = 'ALL';
-const PAGE_SIZE = 50;
-const pages = { bat: 1, pit: 1 };
-let sortState = {};
+// ── State ─────────────────────────────────────────────────────────────────────
+const D={};
+let curAff='ALL', muHand='R', selP=null, selB=null;
+const pg={aff_bat:1,aff_pit:1,pro:1};
+const ss={};
+const PS=50;
+const BASE='./data/';
+const MARINERS_TEAMS=['Tacoma Rainiers','Arkansas Travelers','Everett AquaSox','Modesto Nuts','ACL Mariners','Seattle Mariners'];
 
-// ── Data loading ─────────────────────────────────────────────────────────────
-const BASE = './data/';
+// ── Boot ──────────────────────────────────────────────────────────────────────
+async function load(n){try{const r=await fetch(BASE+n+'.json?_='+Date.now());return r.ok?await r.json():null;}catch{return null;}}
 
-async function fetchJSON(name) {
-  try {
-    const r = await fetch(BASE + name + '.json?_=' + Date.now());
-    if (!r.ok) return null;
-    return await r.json();
-  } catch { return null; }
-}
-
-async function loadAll() {
-  const [meta, bat, pit, standings, trans, draft] = await Promise.all([
-    fetchJSON('meta'),
-    fetchJSON('batting_all'),
-    fetchJSON('pitching_all'),
-    fetchJSON('standings_all'),
-    fetchJSON('transactions_recent'),
-    fetchJSON('draft'),
+async function init(){
+  document.getElementById('todays-date').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const[meta,bat,pit,std,trans,sched]=await Promise.all([
+    load('meta'),load('batting_all'),load('pitching_all'),
+    load('standings_all'),load('transactions_recent'),load('schedule_window')
   ]);
-
-  if (meta) {
-    document.getElementById('last-updated').textContent = 'Updated: ' + (meta.updated_utc || '—').slice(0,16).replace('T',' ');
-    document.getElementById('season-badge').textContent = 'Season ' + meta.season;
-    document.getElementById('overview-sub').textContent = 'Season ' + meta.season + ' · ' + (meta.sources || []).join(' · ');
+  if(meta){
+    document.getElementById('updated').textContent=(meta.updated_utc||'').slice(0,16).replace('T',' ')+' UTC';
+    document.getElementById('season-lbl').textContent=meta.season;
   }
-
-  DATA.bat       = bat       || [];
-  DATA.pit       = pit       || [];
-  DATA.standings = standings || [];
-  DATA.trans     = trans     || [];
-  DATA.draft     = draft     || [];
-
-  renderOverview();
-  renderBatTable();
-  renderPitTable();
-  renderStandings();
-  renderTransactions();
-  renderDraft();
+  D.bat=bat||[];D.pit=pit||[];D.std=std||[];D.trans=trans||[];D.sched=sched||[];
+  D.msea_bat=D.bat.filter(r=>MARINERS_TEAMS.some(t=>(r.team_name||'').includes(t.split(' ')[0])));
+  D.msea_pit=D.pit.filter(r=>MARINERS_TEAMS.some(t=>(r.team_name||'').includes(t.split(' ')[0])));
+  loadArticles();
+  renderHome();
+  renderAffBat();renderAffPit();
+  renderProspects();renderScores();renderTx();
+  renderProspectsWidget();renderScoresWidget();renderTxWidget();
 }
 
-// ── Section nav ───────────────────────────────────────────────────────────────
-function showSection(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
-  document.getElementById('section-' + name).classList.add('visible');
-  document.querySelectorAll('.nav-link').forEach(l => {
-    l.classList.toggle('active', l.dataset.section === name);
-  });
-}
-
-function setLevel(lvl) {
-  currentLevel = lvl;
-  document.querySelectorAll('.level-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.level === lvl);
-  });
-  pages.bat = 1; pages.pit = 1;
-  renderBatTable(); renderPitTable(); renderStandings(); renderOverview();
+// ── Nav ───────────────────────────────────────────────────────────────────────
+function nav(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('visible'));
+  document.getElementById('sec-'+id).classList.add('visible');
+  document.querySelectorAll('.mainnav a').forEach(a=>a.classList.toggle('active',a.dataset.sec===id));
+  window.scrollTo(0,0);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function levelClass(lvl) {
-  const map = { AAA:'aaa', AA:'aa', HighA:'higha', A:'a', Rookie:'rookie' };
-  return 'level-tag tag-' + (map[lvl] || 'aaa');
+function nf(v,d=3){if(v==null||v==='')return '—';const f=parseFloat(v);return isNaN(f)?v:(d===0?Math.round(f).toLocaleString():f.toFixed(d));}
+function lt(l){const m={AAA:'aaa',AA:'aa',HighA:'higha',A:'a',Rookie:'rookie',MLB:'mlb'};return '<span class="tag tag-'+(m[l]||'aaa')+'">'+l+'</span>';}
+function srt(arr,col,asc){return[...arr].sort((a,b)=>{const an=parseFloat(a[col]),bn=parseFloat(b[col]);if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;return asc?String(a[col]||'').localeCompare(String(b[col]||'')):String(b[col]||'').localeCompare(String(a[col]||''));});}
+function bldTbl(rows,cols,id){
+  if(!rows.length){document.getElementById(id).innerHTML='<div class="empty">No data available yet — waiting for first scrape</div>';return;}
+  const s=ss[id]||{};const sorted=s.col?srt(rows,s.col,s.asc):rows;
+  let h='<table class="dtable"><thead><tr>';
+  cols.forEach(c=>{const cl=s.col===c.k?(s.asc?'sa':'sd'):'';h+=`<th class="${cl}" onclick="doSort('${id}','${c.k}')">${c.l}</th>`;});
+  h+='</tr></thead><tbody>';
+  sorted.forEach(r=>{h+='<tr>';cols.forEach(c=>{
+    let cell;
+    if(c.k==='level')cell=lt(r[c.k]);
+    else if(c.t==='name')cell='<span class="nc">'+(r[c.k]||'—')+'</span>';
+    else if(c.t==='num')cell='<span class="num">'+nf(r[c.k],c.d??3)+'</span>';
+    else if(c.t==='int')cell='<span class="num">'+(r[c.k]!=null?parseInt(r[c.k]).toLocaleString():'—')+'</span>';
+    else cell='<span class="muted">'+(r[c.k]||'—')+'</span>';
+    h+=`<td>${cell}</td>`;});h+='</tr>';});
+  h+='</tbody></table>';document.getElementById(id).innerHTML=h;
+}
+function doSort(id,col){if(!ss[id])ss[id]={col:null,asc:true};ss[id].asc=ss[id].col===col?!ss[id].asc:true;ss[id].col=col;if(id==='aff-bat-tbl')renderAffBat();else if(id==='aff-pit-tbl')renderAffPit();else if(id==='pro-tbl')renderProspects();}
+function rpg(t,total,pgId,fn){const p=pg[t],tp=Math.ceil(total/PS);document.getElementById(pgId).innerHTML=`<span>${((p-1)*PS)+1}–${Math.min(p*PS,total)} of ${total.toLocaleString()}</span><button class="page-btn" onclick="pg['${t}']--;${fn}()" ${p<=1?'disabled':''}>‹ Prev</button><button class="page-btn" onclick="pg['${t}']++;${fn}()" ${p>=tp?'disabled':''}>Next ›</button>`;}
+
+// ── HOME ──────────────────────────────────────────────────────────────────────
+function renderHome(){
+  // Top 5 M's batters preview
+  const top=D.msea_bat.filter(r=>r.plate_appearances>=20).sort((a,b)=>(b.ops||0)-(a.ops||0)).slice(0,8);
+  const bc=[{k:'level',l:'LVL'},{k:'player_full_name',l:'Player',t:'name'},{k:'team_name',l:'Team'},{k:'plate_appearances',l:'PA',t:'int'},{k:'avg',l:'AVG',t:'num',d:3},{k:'obp',l:'OBP',t:'num',d:3},{k:'ops',l:'OPS',t:'num',d:3},{k:'home_runs',l:'HR',t:'int'}];
+  bldTbl(top,bc,'home-bat-tbl');
 }
 
-function fmt(v, dec = 3) {
-  if (v == null || v === '') return '—';
-  const n = parseFloat(v);
-  if (isNaN(n)) return v;
-  return dec === 0 ? n.toLocaleString() : n.toFixed(dec);
-}
-
-function filterByLevel(arr) {
-  if (currentLevel === 'ALL') return arr;
-  return arr.filter(r => r.level === currentLevel);
-}
-
-function sortData(arr, col, asc) {
-  return [...arr].sort((a, b) => {
-    const av = a[col], bv = b[col];
-    const an = parseFloat(av), bn = parseFloat(bv);
-    const numericA = !isNaN(an), numericB = !isNaN(bn);
-    if (numericA && numericB) return asc ? an - bn : bn - an;
-    const sa = String(av || ''), sb = String(bv || '');
-    return asc ? sa.localeCompare(sb) : sb.localeCompare(sa);
-  });
-}
-
-function makeSortHandler(tableId, col, renderFn) {
-  return () => {
-    if (!sortState[tableId]) sortState[tableId] = { col: null, asc: true };
-    const s = sortState[tableId];
-    s.asc = s.col === col ? !s.asc : true;
-    s.col = col;
-    renderFn();
-  };
-}
-
-function buildTable(rows, cols, containerId, sortKey) {
-  if (!rows.length) { document.getElementById(containerId).innerHTML = '<div class="empty">No data available</div>'; return; }
-  const s = sortState[containerId] || {};
-  const sorted = s.col ? sortData(rows, s.col, s.asc) : rows;
-
-  let html = '<table class="data-table"><thead><tr>';
-  cols.forEach(c => {
-    const cls = s.col === c.key ? (s.asc ? 'sorted-asc' : 'sorted-desc') : '';
-    html += `<th class="${cls}" onclick="handleSort('${containerId}','${c.key}')">${c.label}</th>`;
-  });
-  html += '</tr></thead><tbody>';
-  sorted.forEach(r => {
-    html += '<tr>';
-    cols.forEach(c => {
-      const v = r[c.key];
-      let cell = '';
-      if (c.key === 'level') cell = `<span class="${levelClass(v)}">${v || '—'}</span>`;
-      else if (c.type === 'name') cell = `<span class="name-col">${v || '—'}</span>`;
-      else if (c.type === 'num')  cell = `<span class="num-col">${fmt(v, c.dec ?? 3)}</span>`;
-      else if (c.type === 'int')  cell = `<span class="num-col">${v != null ? parseInt(v).toLocaleString() : '—'}</span>`;
-      else cell = `<span class="team-col">${v || '—'}</span>`;
-      html += `<td>${cell}</td>`;
-    });
-    html += '</tr>';
-  });
-  html += '</tbody></table>';
-  document.getElementById(containerId).innerHTML = html;
-}
-
-const sortHandlers = {};
-function handleSort(tableId, col) {
-  if (!sortState[tableId]) sortState[tableId] = { col: null, asc: true };
-  const s = sortState[tableId];
-  s.asc = s.col === col ? !s.asc : true;
-  s.col = col;
-  // re-render based on table type
-  if (tableId === 'bat-table-container') renderBatTable();
-  else if (tableId === 'pit-table-container') renderPitTable();
-}
-
-// ── Overview ─────────────────────────────────────────────────────────────────
-function renderOverview() {
-  const bat = filterByLevel(DATA.bat);
-  const pit = filterByLevel(DATA.pit);
-
-  // Hero stats
-  const hrLeader = [...bat].sort((a,b) => (b.home_runs||0)-(a.home_runs||0))[0];
-  const avgLeader = [...bat].filter(r=>r.plate_appearances>=50).sort((a,b)=>(b.avg||0)-(a.avg||0))[0];
-  const eraLeader = [...pit].filter(r=>(r.innings_pitched||0)>=20).sort((a,b)=>(a.era||99)-(b.era||99))[0];
-  const soLeader  = [...pit].sort((a,b)=>(b.strike_outs||0)-(a.strike_outs||0))[0];
-
-  document.getElementById('overview-cards').innerHTML = `
-    <div class="stat-card"><div class="label">HR Leader</div><div class="value">${hrLeader?.home_runs||'—'}</div><div class="sub">${hrLeader?.player_full_name||'—'}</div></div>
-    <div class="stat-card"><div class="label">Batting Avg</div><div class="value">${avgLeader ? fmt(avgLeader.avg,3) : '—'}</div><div class="sub">${avgLeader?.player_full_name||'—'}</div></div>
-    <div class="stat-card"><div class="label">ERA Leader</div><div class="value">${eraLeader ? fmt(eraLeader.era,2) : '—'}</div><div class="sub">${eraLeader?.player_full_name||'—'}</div></div>
-    <div class="stat-card"><div class="label">K Leader</div><div class="value">${soLeader?.strike_outs||'—'}</div><div class="sub">${soLeader?.player_full_name||'—'}</div></div>
-    <div class="stat-card"><div class="label">Players</div><div class="value">${bat.length.toLocaleString()}</div><div class="sub">batters tracked</div></div>
-    <div class="stat-card"><div class="label">Pitchers</div><div class="value">${pit.length.toLocaleString()}</div><div class="sub">pitchers tracked</div></div>
-  `;
-
-  const topBat = [...bat].filter(r=>r.plate_appearances>=50).sort((a,b)=>(b.ops||0)-(a.ops||0)).slice(0,10);
-  const batCols = [
-    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
-    {key:'team_name',label:'Team'},{key:'plate_appearances',label:'PA',type:'int'},
-    {key:'home_runs',label:'HR',type:'int'},{key:'avg',label:'AVG',type:'num',dec:3},
-    {key:'obp',label:'OBP',type:'num',dec:3},{key:'slg',label:'SLG',type:'num',dec:3},
-    {key:'ops',label:'OPS',type:'num',dec:3},
-  ];
-  buildTable(topBat, batCols, 'overview-bat-table', 'ops');
-
-  const topPit = [...pit].filter(r=>(r.innings_pitched||0)>=20).sort((a,b)=>(a.era||99)-(b.era||99)).slice(0,10);
-  const pitCols = [
-    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
-    {key:'team_name',label:'Team'},{key:'innings_pitched',label:'IP',type:'num',dec:1},
-    {key:'wins',label:'W',type:'int'},{key:'losses',label:'L',type:'int'},
-    {key:'era',label:'ERA',type:'num',dec:2},{key:'whip',label:'WHIP',type:'num',dec:3},
-    {key:'strike_outs',label:'K',type:'int'},
-  ];
-  buildTable(topPit, pitCols, 'overview-pit-table', 'era');
-}
-
-// ── Batting table ─────────────────────────────────────────────────────────────
-function filterTable(type) {
-  pages[type] = 1;
-  if (type === 'bat') renderBatTable();
-  else renderPitTable();
-}
-
-function getFiltered(type) {
-  const src = type === 'bat' ? DATA.bat : DATA.pit;
-  const search = document.getElementById(type + '-search')?.value.toLowerCase() || '';
-  const lvl    = document.getElementById(type + '-level-filter')?.value || '';
-  const minVal = parseFloat(document.getElementById(type === 'bat' ? 'bat-pa-filter' : 'pit-ip-filter')?.value || 0);
-  const minKey = type === 'bat' ? 'plate_appearances' : 'innings_pitched';
-
-  return src.filter(r => {
-    if (lvl && r.level !== lvl) return false;
-    if (currentLevel !== 'ALL' && r.level !== currentLevel) return false;
-    if ((parseFloat(r[minKey]) || 0) < minVal) return false;
-    if (search && !JSON.stringify(r).toLowerCase().includes(search)) return false;
+// ── AFFILIATES ────────────────────────────────────────────────────────────────
+const AFF_MAP={ALL:null,SEA:'Mariners',TAC:'Tacoma',ARK:'Arkansas',EVE:'Everett',MOD:'Modesto',ACL:'ACL'};
+function setAff(a){curAff=a;document.querySelectorAll('.afftab').forEach(t=>t.classList.toggle('active',t.dataset.aff===a));document.getElementById('aff-badge').textContent=a==='ALL'?'All M\'s Affiliates':AFF_MAP[a]||a;pg.aff_bat=1;pg.aff_pit=1;renderAffBat();renderAffPit();}
+function getAffRows(src){
+  const q_bat=document.getElementById('aff-bat-q')?.value.toLowerCase()||'';
+  const q_pit=document.getElementById('aff-pit-q')?.value.toLowerCase()||'';
+  const q=src==='bat'?q_bat:q_pit;
+  const arr=src==='bat'?D.msea_bat:D.msea_pit;
+  return arr.filter(r=>{
+    if(curAff!=='ALL'&&AFF_MAP[curAff]&&!(r.team_name||'').includes(AFF_MAP[curAff]))return false;
+    if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;
     return true;
   });
 }
+function renderAffBat(){
+  const minPA=parseFloat(document.getElementById('aff-bat-pa')?.value||0);
+  const rows=getAffRows('bat').filter(r=>(parseFloat(r.plate_appearances)||0)>=minPA);
+  const s=ss['aff-bat-tbl']||{};const sorted=s.col?srt(rows,s.col,s.asc):[...rows].sort((a,b)=>(b.ops||0)-(a.ops||0));
+  const slice=sorted.slice((pg.aff_bat-1)*PS,pg.aff_bat*PS);
+  const cols=[{k:'level',l:'LVL'},{k:'player_full_name',l:'Player',t:'name'},{k:'team_name',l:'Team'},{k:'games_played',l:'G',t:'int'},{k:'plate_appearances',l:'PA',t:'int'},{k:'hits',l:'H',t:'int'},{k:'doubles',l:'2B',t:'int'},{k:'home_runs',l:'HR',t:'int'},{k:'rbi',l:'RBI',t:'int'},{k:'stolen_bases',l:'SB',t:'int'},{k:'avg',l:'AVG',t:'num',d:3},{k:'obp',l:'OBP',t:'num',d:3},{k:'slg',l:'SLG',t:'num',d:3},{k:'ops',l:'OPS',t:'num',d:3}];
+  bldTbl(slice,cols,'aff-bat-tbl');rpg('aff_bat',rows.length,'aff-bat-pg','renderAffBat');
+}
+function renderAffPit(){
+  const minIP=parseFloat(document.getElementById('aff-pit-ip')?.value||0);
+  const rows=getAffRows('pit').filter(r=>(parseFloat(r.innings_pitched)||0)>=minIP);
+  const s=ss['aff-pit-tbl']||{};const sorted=s.col?srt(rows,s.col,s.asc):[...rows].sort((a,b)=>(a.era||99)-(b.era||99));
+  const slice=sorted.slice((pg.aff_pit-1)*PS,pg.aff_pit*PS);
+  const cols=[{k:'level',l:'LVL'},{k:'player_full_name',l:'Player',t:'name'},{k:'team_name',l:'Team'},{k:'games_played',l:'G',t:'int'},{k:'games_started',l:'GS',t:'int'},{k:'wins',l:'W',t:'int'},{k:'losses',l:'L',t:'int'},{k:'innings_pitched',l:'IP',t:'num',d:1},{k:'era',l:'ERA',t:'num',d:2},{k:'whip',l:'WHIP',t:'num',d:3},{k:'strike_outs',l:'K',t:'int'},{k:'base_on_balls',l:'BB',t:'int'}];
+  bldTbl(slice,cols,'aff-pit-tbl');rpg('aff_pit',rows.length,'aff-pit-pg','renderAffPit');
+}
+function filterAffBat(){pg.aff_bat=1;renderAffBat();}
+function filterAffPit(){pg.aff_pit=1;renderAffPit();}
 
-function renderBatTable() {
-  const rows = getFiltered('bat');
-  const s = sortState['bat-table-container'] || {};
-  const sorted = s.col ? sortData(rows, s.col, s.asc) : [...rows].sort((a,b)=>(b.ops||0)-(a.ops||0));
-  const page = pages.bat;
-  const slice = sorted.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
-
-  const cols = [
-    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
-    {key:'team_name',label:'Team'},{key:'games_played',label:'G',type:'int'},
-    {key:'plate_appearances',label:'PA',type:'int'},{key:'at_bats',label:'AB',type:'int'},
-    {key:'hits',label:'H',type:'int'},{key:'doubles',label:'2B',type:'int'},
-    {key:'triples',label:'3B',type:'int'},{key:'home_runs',label:'HR',type:'int'},
-    {key:'rbi',label:'RBI',type:'int'},{key:'stolen_bases',label:'SB',type:'int'},
-    {key:'base_on_balls',label:'BB',type:'int'},{key:'strike_outs',label:'K',type:'int'},
-    {key:'avg',label:'AVG',type:'num',dec:3},{key:'obp',label:'OBP',type:'num',dec:3},
-    {key:'slg',label:'SLG',type:'num',dec:3},{key:'ops',label:'OPS',type:'num',dec:3},
-  ];
-  buildTable(slice, cols, 'bat-table-container', 'ops');
-  renderPagination('bat', rows.length);
+// ── PROSPECTS ─────────────────────────────────────────────────────────────────
+function filterProspects(){pg.pro=1;renderProspects();}
+function renderProspects(){
+  const q=document.getElementById('pro-q')?.value.toLowerCase()||'';
+  const org=document.getElementById('pro-org')?.value||'';
+  const pos=document.getElementById('pro-pos')?.value||'';
+  const rows=(D.bat||[]).filter(r=>{
+    if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;
+    return true;
+  }).slice(0,200);
+  if(!rows.length){document.getElementById('pro-tbl').innerHTML='<div class="empty">Prospect data loads after first scrape completes</div>';return;}
+  const cols=[{k:'level',l:'LVL'},{k:'player_full_name',l:'Player',t:'name'},{k:'team_name',l:'Org'},{k:'position_abbreviation',l:'Pos'},{k:'games_played',l:'G',t:'int'},{k:'plate_appearances',l:'PA',t:'int'},{k:'avg',l:'AVG',t:'num',d:3},{k:'obp',l:'OBP',t:'num',d:3},{k:'slg',l:'SLG',t:'num',d:3},{k:'ops',l:'OPS',t:'num',d:3},{k:'home_runs',l:'HR',t:'int'},{k:'stolen_bases',l:'SB',t:'int'}];
+  const s=ss['pro-tbl']||{};const sorted=s.col?srt(rows,s.col,s.asc):[...rows].sort((a,b)=>(b.ops||0)-(a.ops||0));
+  const slice=sorted.slice((pg.pro-1)*PS,pg.pro*PS);
+  bldTbl(slice,cols,'pro-tbl');rpg('pro',rows.length,'pro-pg','renderProspects');
 }
 
-function renderPitTable() {
-  const rows = getFiltered('pit');
-  const s = sortState['pit-table-container'] || {};
-  const sorted = s.col ? sortData(rows, s.col, s.asc) : [...rows].sort((a,b)=>(a.era||99)-(b.era||99));
-  const page = pages.pit;
-  const slice = sorted.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
-
-  const cols = [
-    {key:'level',label:'LVL'},{key:'player_full_name',label:'Player',type:'name'},
-    {key:'team_name',label:'Team'},{key:'games_played',label:'G',type:'int'},
-    {key:'games_started',label:'GS',type:'int'},{key:'wins',label:'W',type:'int'},
-    {key:'losses',label:'L',type:'int'},{key:'innings_pitched',label:'IP',type:'num',dec:1},
-    {key:'era',label:'ERA',type:'num',dec:2},{key:'whip',label:'WHIP',type:'num',dec:3},
-    {key:'strike_outs',label:'K',type:'int'},{key:'base_on_balls',label:'BB',type:'int'},
-    {key:'hits',label:'H',type:'int'},{key:'home_runs',label:'HR',type:'int'},
-    {key:'batting_avg_against',label:'BAA',type:'num',dec:3},
-  ];
-  buildTable(slice, cols, 'pit-table-container', 'era');
-  renderPagination('pit', rows.length);
+function renderProspectsWidget(){
+  const top=D.msea_bat.filter(r=>r.plate_appearances>=10).sort((a,b)=>(b.ops||0)-(a.ops||0)).slice(0,5);
+  document.getElementById('prospects-widget').innerHTML=top.length?top.map((p,i)=>`
+    <div style="padding:9px 14px;border-bottom:1px solid rgba(26,58,92,.5);display:flex;align-items:center;gap:10px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:${i<3?'var(--gold)':'var(--border)'};width:28px">${i+1}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${p.player_full_name}</div><div style="font-size:11px;color:var(--muted)">${p.team_name||''} · ${p.level||''}</div></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--teal-light)">${nf(p.ops,3)}</div>
+    </div>`).join(''):'<div class="empty" style="padding:20px">Data loading…</div>';
 }
 
-function renderPagination(type, total) {
-  const page = pages[type];
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  const el = document.getElementById(type + '-pagination');
-  if (!el) return;
-  el.innerHTML = `
-    <span>${((page-1)*PAGE_SIZE)+1}–${Math.min(page*PAGE_SIZE,total)} of ${total.toLocaleString()}</span>
-    <button class="page-btn" onclick="changePage('${type}',-1)" ${page<=1?'disabled':''}>‹ Prev</button>
-    <button class="page-btn" onclick="changePage('${type}',1)"  ${page>=totalPages?'disabled':''}>Next ›</button>
-  `;
+// ── SCORES ────────────────────────────────────────────────────────────────────
+function renderScoresWidget(){
+  const games=D.sched.slice(0,5);
+  document.getElementById('scores-widget').innerHTML=games.length?games.map(g=>`
+    <div class="score-item">
+      <div><div class="score-team away">${g.away_team||'Away'}</div><div class="score-level">${g.level||''}</div></div>
+      <div><div class="score-num">${g.away_score!=null?g.away_score+'–'+(g.home_score||0):'vs'}</div><div class="score-status">${(g.status||'').slice(0,8)}</div></div>
+      <div class="score-team home">${g.home_team||'Home'}</div>
+    </div>`).join(''):'<div class="empty" style="padding:20px">No games today</div>';
+}
+function renderScores(){
+  const games=D.sched;
+  document.getElementById('scores-full').innerHTML=games.length?`<table class="dtable"><thead><tr><th>Date</th><th>Level</th><th>Away</th><th>Score</th><th>Home</th><th>Status</th><th>Venue</th></tr></thead><tbody>${games.map(g=>`<tr><td class="muted">${g.game_date||'—'}</td><td>${lt(g.level)}</td><td class="nc">${g.away_team||'—'}</td><td class="num">${g.away_score!=null?g.away_score+' – '+g.home_score:'—'}</td><td class="nc">${g.home_team||'—'}</td><td class="muted">${g.status||'—'}</td><td class="muted">${g.venue||'—'}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">No recent scores</div>';
 }
 
-function changePage(type, dir) {
-  pages[type] = Math.max(1, pages[type] + dir);
-  if (type === 'bat') renderBatTable(); else renderPitTable();
-  document.getElementById('section-' + (type === 'bat' ? 'batting' : 'pitching'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+// ── TRANSACTIONS ──────────────────────────────────────────────────────────────
+function renderTxWidget(){
+  const rows=D.trans.slice(0,6);
+  document.getElementById('tx-widget').innerHTML=rows.length?rows.map(r=>`
+    <div class="tx-item-sm">
+      <div class="tp"><span class="tx-badge">${r.typeDesc||'—'}</span>${r.fullName||r.person_fullName||'—'}</div>
+      <div class="td">${r.description||'—'}</div>
+    </div>`).join(''):'<div class="empty" style="padding:16px">No recent transactions</div>';
 }
-
-// ── Standings ─────────────────────────────────────────────────────────────────
-function renderStandings() {
-  const rows = filterByLevel(DATA.standings);
-  if (!rows.length) { document.getElementById('standings-container').innerHTML = '<div class="empty">No standings data</div>'; return; }
-
-  const byLevel = {};
-  rows.forEach(r => { (byLevel[r.level] = byLevel[r.level] || []).push(r); });
-
-  let html = '';
-  Object.entries(byLevel).forEach(([lvl, teams]) => {
-    const sorted = [...teams].sort((a,b)=>(b.wins||0)-(a.wins||0));
-    html += `<div class="standings-card">
-      <div class="standings-card-header">
-        <div class="standings-card-title"><span class="${levelClass(lvl)}">${lvl}</span></div>
-        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${sorted.length} teams</div>
-      </div>
-      <table class="standings-table">
-        <thead><tr><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th></tr></thead>
-        <tbody>`;
-    sorted.forEach((t, i) => {
-      html += `<tr>
-        <td class="${i===0?'leader':''}">${t.team_name||'—'}</td>
-        <td class="${i===0?'leader':''}">${t.wins||'—'}</td>
-        <td>${t.losses||'—'}</td>
-        <td>${fmt(t.pct,3)}</td>
-        <td style="color:var(--muted)">${t.games_back||'—'}</td>
-      </tr>`;
-    });
-    html += '</tbody></table></div>';
-  });
-  document.getElementById('standings-container').innerHTML = html || '<div class="empty">No standings data</div>';
-}
-
-// ── Transactions ──────────────────────────────────────────────────────────────
-function renderTransactions() {
-  const types = [...new Set(DATA.trans.map(r=>r.typeDesc).filter(Boolean))];
-  const sel = document.getElementById('tx-type-filter');
-  if (sel) {
-    sel.innerHTML = '<option value="">All Types</option>' + types.map(t=>`<option value="${t}">${t}</option>`).join('');
-  }
+function renderTx(){
+  const types=[...new Set(D.trans.map(r=>r.typeDesc).filter(Boolean))];
+  const sel=document.getElementById('tx-type');
+  if(sel)sel.innerHTML='<option value="">All Types</option>'+types.map(t=>`<option>${t}</option>`).join('');
   filterTx();
 }
-
-function filterTx() {
-  const search = document.getElementById('tx-search')?.value.toLowerCase() || '';
-  const type   = document.getElementById('tx-type-filter')?.value || '';
-  const rows   = DATA.trans.filter(r => {
-    if (type && r.typeDesc !== type) return false;
-    if (search && !JSON.stringify(r).toLowerCase().includes(search)) return false;
-    return true;
-  }).slice(0, 200);
-
-  if (!rows.length) { document.getElementById('tx-container').innerHTML = '<div class="empty">No transactions found</div>'; return; }
-
-  document.getElementById('tx-container').innerHTML = rows.map(r => `
-    <div class="tx-item">
-      <div class="tx-date">${r.date||'—'}</div>
-      <div class="tx-desc"><strong>${r.fullName||r.person_fullName||'Unknown'}</strong> · ${r.description||r.typeDesc||'—'}</div>
-      <div class="tx-type">${r.typeDesc||'—'}</div>
-    </div>
-  `).join('');
+function filterTx(){
+  const q=document.getElementById('tx-q')?.value.toLowerCase()||'',type=document.getElementById('tx-type')?.value||'';
+  const rows=D.trans.filter(r=>{if(type&&r.typeDesc!==type)return false;if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;return true;}).slice(0,200);
+  document.getElementById('tx-list').innerHTML=rows.length?rows.map(r=>`
+    <div style="background:var(--card);padding:10px 14px;border-bottom:1px solid rgba(26,58,92,.4);display:grid;grid-template-columns:85px 1fr auto;gap:10px;align-items:center">
+      <div style="font-family:monospace;font-size:11px;color:var(--muted)">${r.date||'—'}</div>
+      <div><div style="font-weight:600;font-size:13px">${r.fullName||r.person_fullName||'—'}</div><div style="font-size:11px;color:var(--muted)">${r.description||'—'}</div></div>
+      <div class="tx-badge">${r.typeDesc||'—'}</div>
+    </div>`).join(''):'<div class="empty">No transactions found</div>';
 }
 
-// ── Draft ─────────────────────────────────────────────────────────────────────
-function renderDraft() { filterDraft(); }
-function filterDraft() {
-  const search = document.getElementById('draft-search')?.value.toLowerCase() || '';
-  const rows   = DATA.draft.filter(r => !search || JSON.stringify(r).toLowerCase().includes(search)).slice(0,200);
-  const cols   = [
-    {key:'pickNumber',label:'Pick',type:'int'},{key:'roundNumber',label:'Rd',type:'int'},
-    {key:'fullName',label:'Player',type:'name'},{key:'team_name',label:'Team'},
-    {key:'school_name',label:'School'},{key:'abbreviation',label:'Pos'},
-    {key:'signingBonus',label:'Bonus',type:'num',dec:0},
-  ];
-  buildTable(rows, cols, 'draft-table-container');
+// ── MATCHUP ───────────────────────────────────────────────────────────────────
+function muSearch(type){
+  const q=document.getElementById(type+'-mu-q').value.toLowerCase();
+  const res=document.getElementById(type+'-mu-res');
+  if(!q){res.style.display='none';res.innerHTML='';return;}
+  const src=type==='pit'?D.pit:D.bat;
+  const hits=src.filter(r=>(r.player_full_name||'').toLowerCase().includes(q)).slice(0,8);
+  res.style.display=hits.length?'block':'none';
+  res.innerHTML=hits.map(r=>`<div class="result-row" onclick="muSel('${type}','${(r.player_id||r.person_id||'').toString().replace(/'/g,'')}')"><div class="rn">${r.player_full_name}</div><div class="rs">${r.team_name||''} · ${r.level||''} · ${type==='pit'?'ERA '+nf(r.era,2):'OPS '+nf(r.ops,3)}</div></div>`).join('');
+}
+function muSel(type,id){
+  const src=type==='pit'?D.pit:D.bat;
+  const p=src.find(r=>(r.player_id||r.person_id||'').toString()===id);
+  if(!p)return;
+  if(type==='pit'){selP=p;renderPitProf();}else{selB=p;renderBatProf();}
+  document.getElementById(type+'-mu-res').style.display='none';
+  document.getElementById(type+'-mu-q').value=p.player_full_name;
+  if(selP&&selB)renderMuResult();
+}
+function setHand(h){muHand=h;document.querySelectorAll('.hand-btn').forEach(b=>b.classList.toggle('active',b.textContent.includes(h)));if(selP)renderPitProf();}
+function renderPitProf(){
+  if(!selP)return;
+  const a=[{name:'Fastball',vel:'92.4',pct:'54%',whiff:'18%'},{name:'Slider',vel:'83.1',pct:'24%',whiff:'31%'},{name:'Changeup',vel:'83.8',pct:'14%',whiff:'24%'},{name:'Curveball',vel:'76.2',pct:'8%',whiff:'28%'}];
+  document.getElementById('pitch-cards').innerHTML=a.map(p=>`<div class="pitch-card"><div class="pitch-name">${p.name}</div><div class="pitch-val">${p.vel}</div><div class="pitch-sub">mph · ${p.pct} · ${p.whiff} whiff vs ${muHand}HB</div></div>`).join('');
+  const zones=['.210','.245','.198','.280','.305','.260','.190','.225','.215'];
+  document.getElementById('zone-grid').innerHTML=zones.map(v=>{const ba=parseFloat(v)||0;const bg=ba>.270?'rgba(230,57,70,.3)':ba<.210?'rgba(45,198,83,.2)':'rgba(0,133,124,.12)';return`<div class="zone-cell" style="background:${bg}">${v}</div>`;}).join('');
+}
+function renderBatProf(){
+  if(!selB)return;
+  const b=selB;
+  document.getElementById('bat-mu-stats').innerHTML=[['AVG',nf(b.avg,3)],['OBP',nf(b.obp,3)],['SLG',nf(b.slg,3)],['OPS',nf(b.ops,3)],['K%',b.strike_outs&&b.plate_appearances?nf(b.strike_outs/b.plate_appearances*100,1)+'%':'—'],['BB%',b.base_on_balls&&b.plate_appearances?nf(b.base_on_balls/b.plate_appearances*100,1)+'%':'—'],['HR',b.home_runs||'—'],['SB',b.stolen_bases||'—']].map(([l,v])=>`<div class="pstat-row"><span class="pstat-lbl">${l}</span><span class="pstat-val">${v}</span></div>`).join('');
+}
+function renderMuResult(){
+  if(!selP||!selB)return;
+  document.getElementById('mu-result').style.display='block';
+  document.getElementById('mu-header').textContent=selP.player_full_name+' vs '+selB.player_full_name;
+  document.getElementById('mu-body').innerHTML=[['Pitcher ERA',nf(selP.era,2),selP.level],['Batter OPS',nf(selB.ops,3),selB.level],['K/9',selP.innings_pitched?nf(selP.strike_outs/(selP.innings_pitched/9),1):'—','pitcher K rate'],['Batter K%',selB.strike_outs&&selB.plate_appearances?nf(selB.strike_outs/selB.plate_appearances*100,1)+'%':'—','strikeout rate']].map(([n,v,s])=>`<div class="pitch-card"><div class="pitch-name">${n}</div><div class="pitch-val">${v}</div><div class="pitch-sub">${s}</div></div>`).join('');
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-loadAll();
+// ── ARTICLES ──────────────────────────────────────────────────────────────────
+function loadArticles(){
+  const saved=JSON.parse(localStorage.getItem('mm_articles')||'[]');
+  D.articles=saved;
+  renderArticleGrid();
+  renderPublishedList();
+}
+function publishArticle(){
+  const title=document.getElementById('art-title').value.trim();
+  const excerpt=document.getElementById('art-excerpt').value.trim();
+  const body=document.getElementById('art-body').value.trim();
+  const cat=document.getElementById('art-cat').value;
+  if(!title||!body){alert('Please add a headline and article body.');return;}
+  const art={id:Date.now(),title,excerpt,body,cat,date:new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}),author:'Eric Solbakken'};
+  D.articles.unshift(art);
+  localStorage.setItem('mm_articles',JSON.stringify(D.articles));
+  clearDraft();
+  renderArticleGrid();
+  renderPublishedList();
+  nav('home');
+}
+function clearDraft(){document.getElementById('art-title').value='';document.getElementById('art-excerpt').value='';document.getElementById('art-body').value='';}
+function deleteArticle(id){D.articles=D.articles.filter(a=>a.id!==id);localStorage.setItem('mm_articles',JSON.stringify(D.articles));renderArticleGrid();renderPublishedList();}
+function renderArticleGrid(){
+  const arts=D.articles.slice(0,4);
+  document.getElementById('article-grid').innerHTML=arts.length?arts.map(a=>`
+    <div class="article-card">
+      <div class="article-cat">${a.cat}</div>
+      <div class="article-title">${a.title}</div>
+      <div class="article-excerpt">${a.excerpt||a.body.slice(0,100)+'…'}</div>
+      <div class="article-meta">${a.author} · ${a.date}</div>
+    </div>`).join(''):'';
+}
+function renderPublishedList(){
+  document.getElementById('published-list').innerHTML=D.articles.length?D.articles.map(a=>`
+    <div class="tcard" style="margin-bottom:12px;padding:16px 20px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--teal-light)">${a.cat}</div>
+        <div style="font-size:11px;color:var(--muted);margin-left:auto">${a.date}</div>
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--white);margin-bottom:8px">${a.title}</div>
+      <div style="font-family:'Source Serif 4',serif;font-size:14px;color:var(--silver2);line-height:1.7;margin-bottom:12px">${a.body.slice(0,300)}${a.body.length>300?'…':''}</div>
+      <button class="w-btn" onclick="deleteArticle(${a.id})" style="font-size:11px;color:var(--muted)">Delete</button>
+    </div>`).join(''):'<div class="empty">No articles yet</div>';
+}
+
+init();
 </script>
 </body>
 </html>
