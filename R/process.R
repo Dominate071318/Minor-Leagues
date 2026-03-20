@@ -84,17 +84,29 @@ if (!is.null(trans)) {
 # ── Schedule / Results ────────────────────────────────────────────────────────
 sched <- read_raw("schedule")
 if (!is.null(sched)) {
-  sched_clean <- sched %>%
-    select(any_of(c("level","season","gamePk","gameDate",
-                    "teams.away.team.name","teams.away.score",
-                    "teams.home.team.name","teams.home.score",
-                    "status.detailedState","venue.name"))) %>%
-    rename(game_id = gamePk, game_date = gameDate,
-           away_team = `teams.away.team.name`, away_score = `teams.away.score`,
-           home_team = `teams.home.team.name`, home_score = `teams.home.score`,
-           status = `status.detailedState`, venue = `venue.name`) %>%
-    mutate(game_date = as_date(game_date)) %>%
-    arrange(desc(game_date))
+  sched_clean <- sched
+  # Safely rename only columns that exist
+  col_map <- c(gamePk="game_id", gameDate="game_date",
+               "teams.away.team.name"="away_team", "teams.away.score"="away_score",
+               "teams.home.team.name"="home_team", "teams.home.score"="home_score",
+               "status.detailedState"="status", "venue.name"="venue")
+  for (old in names(col_map)) {
+    if (old %in% names(sched_clean)) {
+      names(sched_clean)[names(sched_clean)==old] <- col_map[old]
+    }
+  }
+  if ("game_date" %in% names(sched_clean)) {
+    sched_clean$game_date <- as.Date(sched_clean$game_date)
+    sched_clean <- sched_clean[order(sched_clean$game_date, decreasing=TRUE),]
+  }
+  save_proc(sched_clean, "schedule")
+    sched_clean$game_date <- as.Date(sched_clean$game_date)
+    sched_clean <- sched_clean[order(sched_clean$game_date, decreasing=TRUE),]
+  }
+  save_proc(sched_clean, "schedule")
+    sched_clean$game_date <- as.Date(sched_clean$game_date)
+    sched_clean <- sched_clean[order(sched_clean$game_date, decreasing=TRUE),]
+  }
   save_proc(sched_clean, "schedule")
 }
 
